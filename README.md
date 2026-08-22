@@ -1,0 +1,28 @@
+# My Odoo developmeent environmenet from dev to production
+
+
+* About Me
+* Demo: Setup an Odoo project using uv
+    * setup project with uv
+    * create odoo/addons/ocadays_2026 module
+    * add hatch-odoo backend
+    * add new dependency
+* How all of this was possible an Odoo project like python project?
+    * What's uv
+    * new paradigm with **uv run** to keep your **.venv** synced
+    * What's a python package ?
+    * Did you know OCA release each module in **pypi.org** thanks to **whool** build backend by Stéphane Bidoul ?
+    * how package are installed in a python project ?
+    * hatch backend and hatch-odoo with super power
+        * auto detect package name from project module dependencies
+        * stop worring about addon path 
+* Reproductibe environement with **uv.lock**
+    * benefit of freezing dependencies
+    * unfreeeze dependencies
+* How to manage un realeased dependencies and easly switch to an OCA conrtibutor
+    * python develop
+* uvault to go further
+    * problem: (reproductible environement using OCA PR's)
+    * solution: pushing commit to a fork you own
+    => uvault automatically vaults transient VCS references like Open PR's into your organization's vault repository
+       - and do more (cf ./uvault)
