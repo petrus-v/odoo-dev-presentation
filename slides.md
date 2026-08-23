@@ -137,13 +137,13 @@ Historically, Odoo struggled to integrate smoothly with standard Python tooling 
 # **Agenda**
 
 1. 🐍 **Odoo as a Standard Python Project**: Modern tooling (`uv`, PyPI, `whool`, `hatch-odoo`)
-2. 💣 **The Friction**: Unreleased PR dependencies & Git Garbage Collection hazards
+2. 🔀 **Unreleased PR Dependencies**: Working with unmerged OCA Pull Requests
 3. 🛡️ **DEEP DIVE `uvault`**: Vaulting, local editable dev & release lifecycle
 
 <!--
 Here is our agenda today:
 1. Managing an Odoo project like any standard Python project using uv, PyPI, hatch-odoo, and editable local sources.
-2. The real-world friction of unreleased PR dependencies and the hidden hazard of Git Garbage Collection on forced-pushed commits.
+2. Working with unreleased PR dependencies and handling unmerged OCA Pull Requests.
 3. A deep dive into uvault for vaulting PRs, managing local editable workflows, and release lifecycles.
 -->
 
@@ -414,10 +414,10 @@ However, if a Git dependency commit vanishes upstream, lockfile reproducibility 
 ---
 
 <!-- _class: lead -->
-# **The Friction: Volatile PRs & Git Garbage Collection**
+# **Unreleased PR Dependencies**
 
 <!--
-Now let's examine the real-world friction every Odoo team faces when depending on unmerged PRs or temporary fork branches.
+Now let's see how every Odoo team works with unmerged OCA Pull Requests or temporary fork branches.
 -->
 ---
 
@@ -488,20 +488,31 @@ When you need to work on the PR locally, switch the source to path = ".src/..." 
 
 # **The Hidden Hazard: Git Garbage Collection 💣**
 
-![bg right:48% contain](images/diagram_gc_hazard.svg)
 
 ### Upstream Force-Push / Rebase Hazard!
 
+![width:700px](images/diagram_pr_dependency-wihout-uvault-broken.svg)
+
 If the PR author rebases or force-pushes, the old commit hash is **garbage collected**:
 
-```text
+
+```bash
 $ uv sync --locked
-× Failed to download and build `odoo-addon-mis-builder @ git+...`
-  ├─▶ Git operation failed: failed to fetch commit `88d87101821126a62aa3...`
-  ╰─▶ fatal: erreur distante : upload-pack: not our ref 88d87101821126a62aa3...
+  ...
+  Updating https://github.com/OCA/repo.git (refs/pull/666/head)
+  × Failed to download and build `package @ git+https://github.com/OCA/repo.git@a1b2c3d4e#subdirectory=module`
+  ├─▶ Git operation failed
+  ├─▶ failed to fetch into: ~/.cache/uv/git-v0/a1/b2c3d4e
+  ├─▶ failed to fetch commit `a1b2c3d4e`
+  ╰─▶ process didn't exit successfully: `git fetch --force --update-head-ok 'https://github.com/OCA/repo.git'
+      '+a1b2c3d4e:refs/commit/a1b2c3d4e'` (exit status: 128)
+      --- stderr
+      fatal : distant error : upload-pack: not our ref a1b2c3d4e
 ```
 
+
 > 💥 **CI & Production builds break instantly!**
+
 
 <!--
 Presenter Note: Step 7 (git checkout step-7)
@@ -517,18 +528,80 @@ Running uv sync --locked in CI or Production fails with "upload-pack: not our re
 > 1. 💥 **Upstream Force-Push / Rebase**: Targeted commit disappears ➡️ CI/Prod builds break instantly.
 > 2. 🗑️ **Closed PR or Deleted Branch**: Dependency becomes unavailable.
 > 3. 🔓 **Lack of Immutability**: Pointing to branch names exposes your project to unvetted changes.
-> 4. 🔄 **Local Dev Friction**: Switching from remote Git URL to a local editable clone (`editable = true`) is manual.
 
-### ❓ **How to vault (immutably archive) these VCS references while keeping local dev fast and smooth?**
+### ❓ **How can we preserve these PR commits so our builds never break?**
 
 <!--
-Direct Git URLs are a ticking time bomb for four main reasons:
+Direct Git URLs are a ticking time bomb for three main reasons:
 1. If the PR author force-pushes or rebases, the commit hash vanishes and your CI or prod build breaks immediately.
 2. If the PR gets closed or the branch is deleted, your build fails completely.
 3. Branch references lack immutability.
-4. Switching between a remote Git URL and a local editable clone to work on the PR locally is clumsy and manual.
 
-So how can we immutably archive these VCS references while keeping local development fast and frictionless?
+So how can we preserve these commits under our own control so our builds remain 100% reliable?
+-->
+
+---
+
+# **The Solution: Controlled Remote Vaulting 🔒**
+
+### Preserve PR commits in an organization-controlled Git Vault
+
+- **Freeze & Mirror**: Push PR commit `a1b2c3d4e` as an immutable tag (`pjt-a1b2c3d4e`) to your own Vault repo.
+- **Independence**: Builds depend on your Vault repository, rendering them immune to upstream deletions.
+
+<div align="center">
+
+![width:720px](images/diagram_pr_dependency-with-uvault.svg)
+
+</div>
+
+<!--
+Presenter Note:
+To solve the time-bomb hazard, the concept is to "vault" unmerged PR commits.
+By fetching the PR commit and pushing an immutable tag (pjt-<sha>) to a Git repository under your organization's control, your project no longer relies directly on volatile upstream branches.
+-->
+
+---
+
+# **Garbage Collection Immunity 🛡️**
+
+### Surviving upstream force-pushes & rebases
+
+- **Upstream Rebase**: Upstream author force-pushes commit `f5g6h7i8j`. Old commit `a1b2c3d4e` is GC'd upstream.
+- **Zero CI Breakage**: Your Vault repository retains `a1b2c3d4e` via tag `pjt-a1b2c3d4e`. Builds stay 100% reproducible.
+- **Updating**: A new tag (`pjt-f5g6h7i8j`) is pushed to your Vault when you choose to update.
+
+<div align="center">
+
+![width:700px](images/diagram_pr_dependency-with-uvault-garbadged-former-commit.svg)
+
+</div>
+
+<!--
+Presenter Note:
+Here is what happens when the PR author force-pushes a rebased commit f5g6h7i8j.
+Even though a1b2c3d4e is garbage-collected in the PR fork, it remains permanently stored in your controlled Vault repository!
+Your CI/Prod builds using uv.lock never break.
+-->
+
+---
+
+# **The Catch: Doing This Manually is Painful 🤯**
+
+> ⚠️ **Manual Vaulting Requires High Rigor & Heavy Effort:**
+> 
+> 1. 📥 `git fetch` raw PR refs for every unmerged dependency.
+> 2. 🏷️ Create tags & push them to your private Vault repository.
+> 3. 📝 Update `pyproject.toml` and `uv.lock` sources manually.
+> 4. 🔄 Track upstream PR status (merged, closed, updated) by hand.
+
+### 💡 **Doing this manually is tedious and error-prone... What if a tool did it for you?**
+
+<!--
+Presenter Note:
+While vaulting commits into a controlled repository solves the reliability problem, doing all of this manually is extremely tedious and error-prone.
+You have to fetch refs, create tags, push to remote vaults, update configuration files, and track PR statuses across multiple repositories.
+This is why we built a dedicated tool to automate the entire process: uvault.
 -->
 
 ---
@@ -549,7 +622,7 @@ This brings us to section three: a deep dive into uvault, a tool designed specif
 - 💡 Inspired by **`pip-preserve-requirements`** (by Stéphane Bidoul).
 - 🎯 **3 Core Pillars**:
 
-1. 🔒 **Vaulting (Immutability)**: Archives PR/branch commits into your organization's Vault repository as immutable tags (`ppr-<sha>`).
+1. 🔒 **Vaulting (Immutability)**: Archives PR/branch commits into your organization's Vault repository as immutable tags (`pjt-<sha>`).
 2. 💻 **Local Dev Mode**: Switches any dependency into local `editable` mode (`./.src/`) in 1 second to contribute or test.
 3. 📊 **Status Monitoring (`uvault status`)**: Alerts on PR state (merged, closed, new remote commits, orphaned commits).
 
@@ -557,7 +630,7 @@ This brings us to section three: a deep dive into uvault, a tool designed specif
 uvault is a standalone CLI utility run seamlessly with uvx. It was inspired by Stéphane Bidoul's pip-preserve-requirements.
 
 It stands on three core pillars:
-1. Immutability via Vaulting: it mirrors and freezes PR commits into your organization's private Vault repository using immutable tags formatted as ppr-<sha>.
+1. Immutability via Vaulting: it mirrors and freezes PR commits into your organization's private Vault repository using immutable tags formatted as pjt-<sha>.
 2. Instant Local Dev: it switches any dependency into a local editable clone inside ./.src/ in seconds.
 3. Status Monitoring: uvault status actively tracks whether upstream PRs get merged, closed, updated, or rebased.
 -->
@@ -568,10 +641,10 @@ It stands on three core pillars:
 
 ![bg right:48% contain](images/diagram_vaulting.svg)
 
-### Immutable preservation with `ppr-<sha>` tags
+### Immutable preservation with `pjt-<sha>` tags
 
 - **`uvault sync`** automatically pushes PR commits to your organization's Vault repository (`my-org-vault`).
-- Creates an immutable tag like `ppr-a1b2c3d` (or `pjt-19.0.1.2.3`).
+- Creates an immutable tag like `pjt-a1b2c3d` (or `pjt-19.0.1.2.3`).
 - Updates `pyproject.toml` to point to your secure Vault tag.
 
 > 🔒 **Guarantee**: Even if the upstream PR is rebased or deleted, your Vault retains the commit ➡️ **CI/Prod builds NEVER break!**
@@ -591,7 +664,7 @@ Here is how uvault solves the problem. It mirrors and tags the exact PR commit i
 ### End-to-end VCS lifecycle
 
 1. **`uvault add`**: Declare VCS intention.
-2. **`uvault sync`**: Archive commit to Vault (`ppr-<sha>` / `tag_prefix`).
+2. **`uvault sync`**: Archive commit to Vault (`pjt-<sha>` / `tag_prefix`).
 3. **`uvault status`**: Monitor upstream PR status.
 4. **`uvault develop`**: Switch to local editable clone (`./.src/`).
 5. **`uvault release`**: Freeze immutable release tag on deploy.
@@ -646,19 +719,19 @@ uvx uvault sync
 
 1. **Fetches** the exact commit of PR #123 (`refs/pull/123/head`).
 2. **Auto-forks** via GitHub API if repo doesn't exist in your Vault org yet.
-3. **Pushes immutable tag** (`ppr-<sha>`) to your Vault repo (`my-org-vault/partner-contact`).
+3. **Pushes immutable tag** (`pjt-<sha>`) to your Vault repo (`my-org-vault/partner-contact`).
 4. **Updates `[tool.uv.sources]`** with the secure Vault reference:
 
 ```toml
 [tool.uv.sources]
-odoo-addon-partner-firstname = { git = "https://github.com/my-org-vault/partner-contact", tag = "ppr-a1b2c3d4e5f6...", subdirectory = "setup/partner_firstname" }
+odoo-addon-partner-firstname = { git = "https://github.com/my-org-vault/partner-contact", tag = "pjt-a1b2c3d4e5f6...", subdirectory = "setup/partner_firstname" }
 ```
 
-> 🏷️ *Tag prefix note: `ppr-` comes from `pip-preserve-requirements`. Custom prefixes (e.g., `tag_prefix = "apycod"`) are configurable in `[tool.uvault]`!*
+> 🏷️ *Tag prefix note: Default tag prefix is `pjt-` (e.g., `pjt-a1b2c3d4e`). Custom prefixes (e.g., `tag_prefix = "apycod"`) are configurable in `[tool.uvault]`!*
 
 <!--
 Presenter Note: Step 2 (git checkout step-2-uvault)
-Under the hood, uvault fetches the exact commit of the PR, automatically forks the repo into your Vault organization if it's not there yet, and pushes an immutable tag like ppr-<sha> (or custom prefix like apycod).
+Under the hood, uvault fetches the exact commit of the PR, automatically forks the repo into your Vault organization if it's not there yet, and pushes an immutable tag like pjt-<sha> (or custom prefix like apycod).
 -->
 
 ---
@@ -752,7 +825,7 @@ uvault integrates with bump-my-version. When you bump to a production release, t
 | :--- | :--- | :--- |
 | **Addons Path Setup** | Complex `--addons-path` in `odoo.conf` | 🪄 Automatic via `site-packages` & `hatch-odoo` |
 | **Reproducibility** | Desynchronized `requirements.txt` | 🔒 Unified & deterministic lockfile (`uv.lock`) |
-| **Dependencies on OCA PRs** | Direct Git URL (volatile & risky) | 🛡️ Immutable vaulting with `ppr-<sha>` tag |
+| **Dependencies on OCA PRs** | Direct Git URL (volatile & risky) | 🛡️ Immutable vaulting with `pjt-<sha>` tag |
 | **Local Dev Switch** | Manual clone & path edits | 💻 Single command `uvault develop` (`./.src/`) |
 | **Missing Commit Disruption**| Broken CI / Prod build without warning | ⚓ Permanently preserved in your Vault repo |
 
