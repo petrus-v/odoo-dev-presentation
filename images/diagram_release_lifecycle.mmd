@@ -1,0 +1,15 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#eef2f7', 'primaryTextColor': '#2b3a4a', 'primaryBorderColor': '#0288d1', 'lineColor': '#0288d1', 'tertiaryColor': '#f4f6f9'}}}%%
+flowchart LR
+    DEV1["1. Dev Cycle\nversion = '1.0.1.dev0'\ntag: 1.0.1.dev0+apycod..."] --> BUMP["2. bump release\nbump-my-version bump release"]
+    
+    BUMP --> HOOK["3. pre-commit hook\nExecutes: uvault release"]
+    
+    HOOK --> REL["4. Production Release Tag\nFreezes tag: v1.0.1\n+ Vault tag: 1.0.1+apycod..."]
+    
+    REL --> NEXT["5. Next Dev Cycle\nbump-my-version bump patch --no-tag\nversion = '1.0.2.dev0'"]
+
+    style DEV1 fill:#3498db,color:#ffffff,stroke:#2980b9
+    style BUMP fill:#f39c12,color:#ffffff,stroke:#d35400
+    style HOOK fill:#e67e22,color:#ffffff,stroke:#d35400
+    style REL fill:#2ecc71,color:#ffffff,stroke:#27ae60,stroke-width:2px
+    style NEXT fill:#3498db,color:#ffffff,stroke:#2980b9

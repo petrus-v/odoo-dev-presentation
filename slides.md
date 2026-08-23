@@ -12,11 +12,41 @@ style: |
     --color-highlight: #0288d1;
     --color-dimmed: #6c757d;
   }
-  section {
-    font-size: 78%;
-    padding: 35px 50px;
+  section:not(.lead) {
+    font-size: 100%;
+    padding: 25px 150px 75px 200px;
     color: #2b3a4a;
+    display: flex;
+    flex-direction: column;
+    justify-content: left;
+    align-items: left;
+  }
+  section:not(.lead) > h1,
+  section:not(.lead) > h2 {
+    align-self: center;
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 0.6em;
+    text-align: center;
+  }
+  section:not(.lead) > h3 {
+    align-self: flex-start;
+    width: 100%;
+    margin-top: 0.8em;
+    margin-bottom: 0.3em;
     text-align: left;
+  }
+  section:not(.lead) > *:not(h1):not(h2):not(h3):not(style) {
+    max-width: 100%;
+  }
+  ul, ol {
+    width: fit-content;
+    text-align: left;
+  }
+  blockquote {
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 0.8em;
   }
   h1 {
     font-size: 1.6em;
@@ -38,12 +68,14 @@ style: |
     color: #0288d1;
   }
   pre {
-    font-size: 72%;
+    font-size: 85%;
     background-color: #282c34;
     color: #abb2bf;
     border-radius: 6px;
     padding: 12px 16px;
     text-align: left;
+    width: 100%;
+    box-sizing: border-box;
   }
   pre code {
     color: #abb2bf;
@@ -60,12 +92,12 @@ style: |
     background: #f0f4f8;
     border-left: 6px solid #0288d1;
     padding: 8px 14px;
-    font-size: 90%;
+    font-size: 95%;
     color: #2b3a4a;
     text-align: left;
   }
   table {
-    font-size: 75%;
+    font-size: 85%;
     width: 100%;
     color: #2b3a4a;
   }
@@ -89,20 +121,26 @@ My name is Pierre Verkest from APYCOD, and today I'm excited to talk about how w
 
 ---
 
-# **About & Agenda**
+# **About**
 
-- **About**: Odoo Developer, OCA Contributor, creator of `uvault`
+- **Pierre Verkest** — Odoo Developer @ APYCOD
+- **OCA Contributor** & creator of `uvault`
 - **Context**: Historically, Odoo struggled with standard Python tooling (`addons_path`). Today, it integrates seamlessly (`uv`, `pyproject.toml`)!
 
-### Agenda today:
+<!--
+To introduce myself: I'm Pierre Verkest from APYCOD, Odoo developer, OCA contributor, and creator of uvault.
+Historically, Odoo struggled to integrate smoothly with standard Python tooling due to legacy mechanisms like addons_path. Today, thanks to uv, pyproject.toml, whool, and hatch-odoo, Odoo fits naturally into the modern Python ecosystem!
+-->
+
+---
+
+# **Agenda**
+
 1. 🐍 **Odoo as a Standard Python Project**: Modern tooling (`uv`, PyPI, `whool`, `hatch-odoo`)
 2. 💣 **The Friction**: Unreleased PR dependencies & Git Garbage Collection hazards
 3. 🛡️ **DEEP DIVE `uvault`**: Vaulting, local editable dev & release lifecycle
 
 <!--
-To introduce myself: I'm Pierre Verkest from APYCOD, Odoo developer, OCA contributor, and creator of uvault.
-Historically, Odoo struggled to integrate smoothly with standard Python tooling due to legacy mechanisms like addons_path. Today, thanks to uv, pyproject.toml, whool, and hatch-odoo, Odoo fits naturally into the modern Python ecosystem!
-
 Here is our agenda today:
 1. Managing an Odoo project like any standard Python project using uv, PyPI, hatch-odoo, and editable local sources.
 2. The real-world friction of unreleased PR dependencies and the hidden hazard of Git Garbage Collection on forced-pushed commits.
@@ -129,7 +167,7 @@ uv init ocadays-2026-odoo-dev
 cd ocadays-2026-odoo-dev
 ```
 
-### Modern repository layout 📂
+### Repository layout 📂
 
 ```text
 ocadays-2026-odoo-dev/
@@ -138,7 +176,7 @@ ocadays-2026-odoo-dev/
 └── README.md
 ```
 
-> ⚡ **Result**: In milliseconds, your project root is initialized with standard Python configuration files!
+> ⚡ **Result**: Your project root is initialized with standard Python configuration files!
 
 <!--
 Presenter Note: Step 0 (git checkout step-0)
@@ -149,7 +187,7 @@ In milliseconds, uv initializes a clean Python repository with pyproject.toml an
 
 # **Installing Odoo Core & Custom Addon**
 
-### 1. Custom addon: `odoo/addons/ocadays_2026/__manifest__.py`
+### Custom addon: `odoo/addons/ocadays_2026/__manifest__.py`
 
 ```python
 {
@@ -159,7 +197,7 @@ In milliseconds, uv initializes a clean Python repository with pyproject.toml an
 }
 ```
 
-### 2. Declare Odoo dependency in `pyproject.toml`
+### Declare Odoo dependency in `pyproject.toml`
 
 ```toml
 [project]
@@ -189,7 +227,10 @@ We create our custom Odoo module inside odoo/addons/ocadays_2026 and declare Odo
 uv sync
 
 # Run Odoo CLI with manual --addons-path for local custom module
-uv run odoo --addons-path=odoo/addons -d ocadays2026 -i ocadays_2026 --stop-after-init
+uv run odoo \
+  --addons-path=odoo/addons \
+  -d ocadays2026 -i ocadays_2026 \
+  --stop-after-init
 ```
 
 > 💡 **No `source .venv/bin/activate` needed!** `uv run` syncs and runs inside `.venv` seamlessly.
@@ -205,26 +246,28 @@ At this stage, we still need --addons-path=odoo/addons for local modules. Next, 
 
 # **Adding OCA Dependencies (PyPI & `whool`)**
 
-### 1. Update manifest `odoo/addons/ocadays_2026/__manifest__.py`
+### Update manifest `odoo/addons/ocadays_2026/__manifest__.py`
 
 ```python
     "depends": ["web", "mis_builder"],
 ```
 
-### 2. Add PyPI package to `pyproject.toml`
+### Add PyPI package to `pyproject.toml`
 
 ```toml
+[project]
+...
 dependencies = [
     ...
     "odoo-addon-mis-builder>=19.0",
 ]
 ```
 
-### 3. Run `uv sync`
+### Run `uv sync`
 
 ```bash
 uv sync
-# -> Downloads odoo-addon-mis-builder + odoo-addon-date-range + odoo-addon-report-xlsx from PyPI!
+# -> Downloads mis_builder, date_range & report_xlsx from PyPI!
 ```
 
 <!--
@@ -311,14 +354,14 @@ hatch-odoo leverages Python's namespace package mechanism (via .pth hooks in sit
 
 # **Dynamic Dependencies with `hatch-odoo`**
 
-### 1. Declare dependencies in `__manifest__.py`
+### Declare dependencies in `__manifest__.py`
 
 ```python
 # odoo/addons/ocadays_2026/__manifest__.py
 "depends": ["web", "mis_builder", "partner_firstname"]
 ```
 
-### 2. Enable dynamic resolution in `pyproject.toml`
+### Enable dynamic resolution in `pyproject.toml`
 
 ```toml
 [project]
@@ -342,7 +385,43 @@ Dynamic dependencies single-source requirements in __manifest__.py. hatch-odoo m
 
 ---
 
-# **Using Unmerged OCA Pull Requests**
+# **Reproducibility & Security: `uv.lock`**
+
+### The role of `uv.lock`
+
+- **Cross-platform lockfile** (multi-OS, multi-Python versions).
+- Stores the **exact** version, Git revision, and SHA256 hash of every dependency (core Odoo, OCA modules, C/Python libs).
+- **Supply Chain Protection**: Verifies SHA256 package hashes at install time to prevent tampered artifacts or PyPI republishing attacks.
+
+> 💡 **Pro-Tip (`pre-commit`)**: Auto-sync and ensure consistency of `uv.lock` synced with your pyproject.toml
+
+```yaml
+- repo: https://github.com/astral-sh/uv-pre-commit
+  rev: 0.12.5
+  hooks:
+    - id: uv-lock
+```
+
+> 🎯 **Guarantee**: Local Dev == CI == Staging == Production (Deterministic & Tamper-proof).
+
+<!--
+uv.lock guarantees absolute reproducibility and supply chain security across all environments.
+By recording and checking SHA256 hashes during `uv sync`, uv prevents tampered or compromised packages from being installed.
+Key commands: `uv sync` (sync venv with lockfile), `uv lock` (generate/update), `uv tree` (inspect graph).
+However, if a Git dependency commit vanishes upstream, lockfile reproducibility alone cannot restore the missing commit!
+-->
+
+---
+
+<!-- _class: lead -->
+# **The Friction: Volatile PRs & Git Garbage Collection**
+
+<!--
+Now let's examine the real-world friction every Odoo team faces when depending on unmerged PRs or temporary fork branches.
+-->
+---
+
+# **Working with Unmerged OCA Pull Requests**
 
 ### Real-world scenario: Need an unmerged fix on `OCA/mis-builder#827`
 
@@ -366,6 +445,19 @@ In real projects, we often need unmerged bugfixes or features from open OCA PRs.
 By adding a source override in tool.uv.sources pointing to refs/pull/827/head, uv pulls directly from the Git PR branch.
 Tip: To override a transitive sub-dependency with a Git PR, make sure to list it as a direct dependency so tool.uv.sources resolves it!
 -->
+
+---
+
+# **PR Dependency Architecture**
+
+
+### How `uv` links PRs to `uv.lock`
+
+- **Declaration**: `pyproject.toml` targets `refs/pull/666/head`.
+- **Locking**: `uv.lock` captures the exact commit SHA (e.g., `a1b2c3d4e`).
+- **Resolution**: `uv sync` fetches `a1b2c3d` from the upstream GitHub repo.
+
+![bg 75%](images/diagram_pr_dependency-wihout-uvault.svg)
 
 ---
 
@@ -394,16 +486,11 @@ When you need to work on the PR locally, switch the source to path = ".src/..." 
 
 ---
 
-# **The Hidden Hazard: Git Garbage Collection**
+# **The Hidden Hazard: Git Garbage Collection 💣**
 
-### Return to PR reference
+![bg right:48% contain](images/diagram_gc_hazard.svg)
 
-```toml
-[tool.uv.sources]
-odoo-addon-mis-builder = { git = "https://github.com/OCA/mis-builder.git", rev = "refs/pull/827/head", subdirectory = "mis_builder" }
-```
-
-### 💥 Upstream Git Rebase / Force-Push Hazard!
+### Upstream Force-Push / Rebase Hazard!
 
 If the PR author rebases or force-pushes, the old commit hash is **garbage collected**:
 
@@ -414,76 +501,23 @@ $ uv sync --locked
   ╰─▶ fatal: erreur distante : upload-pack: not our ref 88d87101821126a62aa3...
 ```
 
-> 💣 **CI & Production builds break instantly!**
+> 💥 **CI & Production builds break instantly!**
 
 <!--
 Presenter Note: Step 7 (git checkout step-7)
 Back to PR reference. But here lies the dangerous trap.
-If the PR author rebases or force-pushes on GitHub, the targeted commit hash vanishes.
+As shown in the diagram, if the PR author rebases or force-pushes on GitHub, the targeted commit hash vanishes.
 Running uv sync --locked in CI or Production fails with "upload-pack: not our ref"!
 -->
 
 ---
 
-# **3. Absolute Reproducibility: `uv.lock`**
-
-### The role of `uv.lock`
-
-- **Cross-platform lockfile** (multi-OS, multi-Python versions).
-- Stores the **exact** version, Git revision, and SHA256 hash of every dependency (core Odoo, OCA modules, C/Python libs).
-
-### Daily key commands:
-
-```bash
-uv lock                  # Generate / update lockfile
-uv sync                  # Sync virtualenv with lockfile
-uv tree                  # Visualize complete dependency graph
-uv lock --upgrade-package odoo-addon-partner-firstname # Update a specific module
-```
-
-> 🎯 **Guarantee**: Local Dev == CI == Staging == Production.
-
-<!--
-uv.lock guarantees absolute reproducibility across all environments.
-However, if a Git dependency commit vanishes upstream, lockfile reproducibility alone cannot restore the missing commit!
--->
-
----
-
-<!-- _class: lead -->
-# **4. The Real Problem: Unreleased Dependencies & Volatile PRs**
-
-<!--
-This setup sounds ideal so far, right? But now let's address the real-world headache that every Odoo team faces.
--->
-
----
-
-# **4. Everyday Life of Odoo / OCA Developers 😅**
-
-You work on a project. You need a feature or bugfix available only on:
-- An **open OCA Pull Request** (`OCA/partner-contact#123`), not merged yet.
-- A temporary working branch on a fork.
-
-```toml
-# Naive approach using Git in pyproject.toml / uv:
-[tool.uv.sources]
-odoo-addon-partner-firstname = { git = "https://github.com/OCA/partner-contact", rev = "refs/pull/123/head", subdirectory = "partner_firstname" }
-```
-
-<!--
-In daily Odoo project development, we constantly need features or bugfixes that exist only on an open OCA Pull Request that hasn't been merged yet, or on a temporary fork branch.
-The naive reaction is to add a direct Git URL in pyproject.toml pointing directly to the remote PR ref or branch. Let's see why this creates a major risk.
--->
-
----
-
-# **4. Why Direct Git URLs are a Time Bomb 💣**
+# **Why Direct Git URLs are a Time Bomb 💣**
 
 > 1. 💥 **Upstream Force-Push / Rebase**: Targeted commit disappears ➡️ CI/Prod builds break instantly.
 > 2. 🗑️ **Closed PR or Deleted Branch**: Dependency becomes unavailable.
 > 3. 🔓 **Lack of Immutability**: Pointing to branch names exposes your project to unvetted changes.
-> 4. 🔄 **Local Dev Friction**: Switching from remote Git URL to a local editable clone (`editable = true`) to modify the PR is tedious.
+> 4. 🔄 **Local Dev Friction**: Switching from remote Git URL to a local editable clone (`editable = true`) is manual.
 
 ### ❓ **How to vault (immutably archive) these VCS references while keeping local dev fast and smooth?**
 
@@ -500,16 +534,16 @@ So how can we immutably archive these VCS references while keeping local develop
 ---
 
 <!-- _class: lead -->
-# **5. DEEP DIVE: `uvault` 🛡️**
+# **3. DEEP DIVE: `uvault` 🛡️**
 ### A dedicated VCS workflow tool for `uv`
 
 <!--
-This brings us to section five: a deep dive into `uvault`, a tool designed specifically to solve this workflow problem.
+This brings us to section three: a deep dive into uvault, a tool designed specifically to solve this workflow problem.
 -->
 
 ---
 
-# **5. What is `uvault`?**
+# **What is `uvault`?**
 
 - 🛠️ **Standalone CLI** executed via `uvx` (`uvx --with uvault[github] uvault <command>`).
 - 💡 Inspired by **`pip-preserve-requirements`** (by Stéphane Bidoul).
@@ -520,55 +554,59 @@ This brings us to section five: a deep dive into `uvault`, a tool designed speci
 3. 📊 **Status Monitoring (`uvault status`)**: Alerts on PR state (merged, closed, new remote commits, orphaned commits).
 
 <!--
-`uvault` is a standalone CLI utility run seamlessly with `uvx`. It was inspired by Stéphane Bidoul's `pip-preserve-requirements`.
+uvault is a standalone CLI utility run seamlessly with uvx. It was inspired by Stéphane Bidoul's pip-preserve-requirements.
 
 It stands on three core pillars:
-1. Immutability via Vaulting: it mirrors and freezes PR commits into your organization's private Vault repository using immutable tags formatted as `ppr-<sha>`.
-2. Instant Local Dev: it switches any dependency into a local editable clone inside `./.src/` in seconds.
-3. Status Monitoring: `uvault status` actively tracks whether upstream PRs get merged, closed, updated, or rebased.
+1. Immutability via Vaulting: it mirrors and freezes PR commits into your organization's private Vault repository using immutable tags formatted as ppr-<sha>.
+2. Instant Local Dev: it switches any dependency into a local editable clone inside ./.src/ in seconds.
+3. Status Monitoring: uvault status actively tracks whether upstream PRs get merged, closed, updated, or rebased.
 -->
 
 ---
 
-# **5. `uvault`: Global Workflow**
+# **`uvault` Vaulting Architecture 🛡️**
 
-```text
-                  +-----------------------------------------+
-                  | Declare intent: uvault add              |
-                  +-----------------------------------------+
-                                       |
-                                       v
-                  +-----------------------------------------+
-                  | Synchronize & Vault: uvault sync        |
-                  | (Push immutable tag ppr-<sha> to Vault) |
-                  +-----------------------------------------+
-                                       |
-                     +-----------------+-----------------+
-                     |                                   |
-                     v                                   v
-     +------------------------------+   +------------------------------+
-     | Monitor: uvault status       |   | Local Dev: uvault develop    |
-     | (PR merged? Force-pushed?)   |   | (Clone ./.src + editable)    |
-     +------------------------------+   +------------------------------+
-                                                         |
-                                                         v
-                                        +------------------------------+
-                                        | Release: uvault release      |
-                                        | (Final release tag 1.0.0)    |
-                                        +------------------------------+
-```
+![bg right:48% contain](images/diagram_vaulting.svg)
+
+### Immutable preservation with `ppr-<sha>` tags
+
+- **`uvault sync`** automatically pushes PR commits to your organization's Vault repository (`my-org-vault`).
+- Creates an immutable tag like `ppr-a1b2c3d` (or `pjt-19.0.1.2.3`).
+- Updates `pyproject.toml` to point to your secure Vault tag.
+
+> 🔒 **Guarantee**: Even if the upstream PR is rebased or deleted, your Vault retains the commit ➡️ **CI/Prod builds NEVER break!**
+
+<!--
+Here is how uvault solves the problem. It mirrors and tags the exact PR commit inside your organization's Vault repository. Even if the author force-pushes or deletes the PR upstream, your Vault retains the exact commit permanently.
+-->
+
+---
+
+---
+
+# **`uvault` Global Workflow**
+
+![bg right:48% contain](images/diagram_uvault_workflow.svg)
+
+### End-to-end VCS lifecycle
+
+1. **`uvault add`**: Declare VCS intention.
+2. **`uvault sync`**: Archive commit to Vault (`ppr-<sha>` / `tag_prefix`).
+3. **`uvault status`**: Monitor upstream PR status.
+4. **`uvault develop`**: Switch to local editable clone (`./.src/`).
+5. **`uvault release`**: Freeze immutable release tag on deploy.
 
 <!--
 Here is the overall workflow of uvault.
-First, you declare your dependency intention using `uvault add`.
-Second, `uvault sync` fetches the target commit and creates an immutable tag in your Vault repository.
-From there, you can monitor upstream changes with `uvault status` or switch into local development mode with `uvault develop`.
-Finally, when preparing a production release, `uvault release` freezes immutable production tags.
+First, you declare your dependency intention using uvault add.
+Second, uvault sync fetches the target commit and creates an immutable tag in your Vault repository.
+From there, you can monitor upstream changes with uvault status or switch into local development mode with uvault develop.
+Finally, when preparing a production release, uvault release freezes immutable production tags.
 -->
 
 ---
 
-# **5. Step 1: Declare Intent (`uvault add`)**
+# **Declare Intent (`uvault add`)**
 
 Instead of manually editing `pyproject.toml`, declare a VCS dependency **intention**:
 
@@ -589,14 +627,14 @@ odoo-addon-partner-firstname = { git = "https://github.com/OCA/partner-contact",
 > ℹ️ *Note: `uvault add` configures the intention in `[tool.uvault.sources]`. It does not touch `[tool.uv.sources]` or lockfile yet.*
 
 <!--
-Step one is declaring intent.
-Instead of hand-editing pyproject.toml, you run `uvault add` providing the package name, repo URL, PR number, and subdirectory.
-uvault records this intention under `[tool.uvault.sources]`. At this stage, it doesn't modify `[tool.uv.sources]` or the lockfile yet—it simply registers what you want to achieve.
+Presenter Note: Step 1 (git checkout step-1-uvault)
+Instead of hand-editing pyproject.toml, you run uvault add providing package name, repo URL, PR number, and subdirectory.
+uvault records this intention under [tool.uvault.sources].
 -->
 
 ---
 
-# **5. Step 2: Vault & Freeze (`uvault sync`)**
+# **Vault & Freeze (`uvault sync`)**
 
 ### Run synchronization
 
@@ -616,18 +654,16 @@ uvx uvault sync
 odoo-addon-partner-firstname = { git = "https://github.com/my-org-vault/partner-contact", tag = "ppr-a1b2c3d4e5f6...", subdirectory = "setup/partner_firstname" }
 ```
 
-5. **Run `uv lock`** to update `uv.lock`.
+> 🏷️ *Tag prefix note: `ppr-` comes from `pip-preserve-requirements`. Custom prefixes (e.g., `tag_prefix = "apycod"`) are configurable in `[tool.uvault]`!*
 
 <!--
-Step two is vaulting and freezing via `uvault sync`.
-Under the hood, uvault fetches the exact commit of the PR, automatically forks the repo into your Vault organization if it's not there yet, and pushes an immutable tag like `ppr-<sha>`.
-It then updates `[tool.uv.sources]` to point to your secure Vault tag, and updates `uv.lock`.
-Even if the upstream PR is rebased or deleted tomorrow, your Vault guarantees your build will never break.
+Presenter Note: Step 2 (git checkout step-2-uvault)
+Under the hood, uvault fetches the exact commit of the PR, automatically forks the repo into your Vault organization if it's not there yet, and pushes an immutable tag like ppr-<sha> (or custom prefix like apycod).
 -->
 
 ---
 
-# **5. Step 3: Monitor PR Status (`uvault status`)**
+# **Monitor PR Status (`uvault status`)**
 
 ### Stay in control of external dependencies
 
@@ -637,23 +673,23 @@ uvx uvault status
 
 ### Diagnostics provided by `uvault status`:
 
-- 🟢 **PR Merged**: The OCA PR was merged upstream! You can plan switching back to standard PyPI release.
+- 🟢 **PR Merged**: The OCA PR was merged upstream! Switch back to standard PyPI release.
 - 🔴 **PR Closed**: PR closed without merging.
 - ⚡ **New Remote Commits**: New commits pushed to PR (`uvault sync --update` to fetch).
-- ⚠️ **Orphaned Commit**: Upstream PR was rebased/force-pushed! Your Vault keeps the old commit: **your prod build remains 100% functional**!
+- ⚠️ **Orphaned Commit**: Upstream PR was rebased/force-pushed! Your Vault retains the old commit: **your prod build remains 100% functional**!
 
 <!--
-Step three: monitoring PR status with `uvault status`.
+Presenter Note: Step 3 (git checkout step-3-uvault)
 This command queries GitHub API to give you clear diagnostics:
-- Green light if the PR was merged upstream, so you can transition back to official PyPI releases.
+- Green light if the PR was merged upstream.
 - Red light if closed.
 - Lightning indicator if new commits were added to the PR.
-- Warning if the PR commit was orphaned by an upstream rebase. Even in that case, your Vault retains the original commit so production keeps running smoothly!
+- Warning if the PR commit was orphaned by an upstream rebase. Your Vault retains the original commit so production keeps running smoothly!
 -->
 
 ---
 
-# **5. Step 4: Ultra-Fast Local Dev (`uvault develop`)**
+# **Ultra-Fast Local Dev (`uvault develop`)**
 
 Need to modify the OCA PR or add a feature locally?
 
@@ -662,54 +698,50 @@ uvx uvault develop odoo-addon-partner-firstname my-feature-branch
 ```
 
 ### Automatic actions performed by `uvault develop`:
-1. **Clones** repo to `./.src/partner-contact`.
-2. **Configures Git Remotes** (upstream OCA, Vault org fork, `my-feature-branch`).
-3. **Switches `pyproject.toml`** to local `editable` mode:
+1. **Clones** repo to `./.src/partner-contact` & configures remotes.
+2. **Switches `pyproject.toml`** to local `editable` mode (`path = "./.src/..."`).
+3. Run **`uv sync`**: local changes are instantly live in Odoo!
 
-```toml
-[tool.uv.sources]
-odoo-addon-partner-firstname = { path = "./.src/partner-contact/setup/partner_firstname", editable = true }
+> 🛡️ **Safety Net (`uvault-check`)**: Prevent committing local editables with `uvault`:
+
+```yaml
+- repo: https://github.com/petrus-v/uvault
+  rev: v0.6.1
+  hooks:
+    - id: uvault-check   # Reverts editables & restores Vault sources before uv-lock!
 ```
 
-4. Run **`uv sync`**: local changes are instantly picked up by Odoo!
-
 <!--
-Step four: ultra-fast local development.
-When you need to fix a bug in the OCA PR or add local customization, run `uvault develop <package> <branch>`.
-uvault automatically clones the repository into `./.src/`, configures all Git remotes (upstream, Vault, and your local branch), and flips pyproject.toml into editable mode.
-Run `uv sync`, and your local code edits take effect in Odoo instantly!
+Presenter Note: Step 4 (git checkout step-4-uvault)
+When you need to fix a bug in the OCA PR or add local customization, run uvault develop <package> <branch>.
+uvault automatically clones into ./.src/, configures remotes, and flips pyproject.toml into editable mode.
+Use uvault-check in pre-commit (placed before Astral's uv-lock hook) to ensure editable paths are never committed by mistake!
 -->
 
 ---
 
-# **5. Step 5: Release Lifecycle & PEP 440 (`uvault release`)**
+# **Release Lifecycle & PEP 440 (`uvault release`)**
+
+![bg right:48% contain](images/diagram_release_lifecycle.svg)
 
 ### PEP 440 Versioning Rules
-In Python: `1.0.1.dev0` (pre-release) < `1.0.1` (final release) < `1.0.2.dev0`.
-`uvault` automatically handles dev versions (`.dev0`) vs final production releases.
-
-```toml
-[tool.uvault]
-tag_prefix = "apycod"
-release_tag_template = "{project_version}+{tag_prefix_normalized}.{pkg_normalized}"
-```
+`1.0.1.dev0` (dev) < `1.0.1` (final release) < `1.0.2.dev0`.
 
 ### Automation with `bump-my-version`:
 
 ```bash
-# 1. In dev: version in pyproject.toml = 1.0.1.dev0
+# 1. In dev: pyproject.toml version = 1.0.1.dev0
 # 2. Final Production Release tag:
 uvx bump-my-version bump release
-# -> Automatic hook: `uvault release` freezes final release immutable tag (v1.0.1)!
+# -> Pre-commit hook runs `uvault release` & freezes tag v1.0.1!
 
-# 3. Prepare next Dev cycle:
+# 3. Next Dev cycle:
 uvx bump-my-version bump patch --no-tag  # -> moves to 1.0.2.dev0
 ```
 
 <!--
-Step five: managing the release lifecycle according to PEP 440 rules.
-Python uses standard version ordering where `.dev0` indicates pre-release development.
-`uvault` integrates with version bumping tools like `bump-my-version`. When you bump to a production release, `uvault release` automatically freezes an immutable production tag (e.g., `v1.0.1`), ensuring end-to-end traceability for production deployments.
+Presenter Note: Step 5 (git checkout step-5-uvault)
+uvault integrates with bump-my-version. When you bump to a production release, the pre-commit hook automatically executes uvault release, freezing an immutable production release tag (e.g. 1.0.1+apycod.pkg).
 -->
 
 ---

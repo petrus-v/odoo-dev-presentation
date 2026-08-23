@@ -1,0 +1,26 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#eef2f7', 'primaryTextColor': '#2b3a4a', 'primaryBorderColor': '#0288d1', 'lineColor': '#2ecc71', 'tertiaryColor': '#f4f6f9'}}}%%
+flowchart TD
+    subgraph Upstream ["OCA Repository (19.0)"]
+        C1["Commit 1"] --> C2["Commit 2"]
+    end
+
+    subgraph PR ["petrus-v / repo (PR #666 - Volatile)"]
+        C2 --> PR_COMMIT["Commit sha: a1b2c3d\n(Force-pushed or Deleted)"]
+    end
+
+    subgraph Vault ["Organization Vault (my-org-vault)"]
+        TAG["🔒 Immutable Tag: ppr-a1b2c3d\n(or apycod.package.a1b2c3d)"]
+    end
+
+    subgraph Project ["My Odoo Project"]
+        PY["pyproject.toml\ntag = 'ppr-a1b2c3d'"]
+        LOCK["uv.lock\nsha = 'a1b2c3d'"]
+        PY --> LOCK
+    end
+
+    PR_COMMIT -.->|"uvault sync (archives commit)"| TAG
+    LOCK -->|"Always succeeds! (Build Safe)"| TAG
+
+    style TAG fill:#2ecc71,color:#ffffff,stroke:#27ae60,stroke-width:2px
+    style LOCK fill:#2b3a4a,color:#ffffff,stroke:#2b3a4a
+    style PY fill:#eef2f7,color:#2b3a4a,stroke:#0288d1

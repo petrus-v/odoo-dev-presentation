@@ -26,3 +26,29 @@
     * solution: pushing commit to a fork you own
     => uvault automatically vaults transient VCS references like Open PR's into your organization's vault repository
        - and do more (cf ./uvault)
+
+---
+
+## 🛠️ Presentation & Diagrams Compilation
+
+### Compile Marp Slides to HTML
+
+```bash
+npx -y @marp-team/marp-cli slides.md -o slides.html
+```
+With whatcher mode
+
+```bash
+npx @marp-team/marp-cli@latest -w slides.md 
+```
+
+### Rebuild Mermaid SVG Diagrams (`images/*.mmd` -> `images/*.svg`)
+
+```bash
+# Generate all SVG diagrams from .mmd source files
+npx -y @mermaid-js/mermaid-cli -i images/diagram_pr_dependency.mmd -o images/diagram_pr_dependency.svg -b transparent
+npx -y @mermaid-js/mermaid-cli -i images/diagram_gc_hazard.mmd -o images/diagram_gc_hazard.svg -b transparent
+npx -y @mermaid-js/mermaid-cli -i images/diagram_vaulting.mmd -o images/diagram_vaulting.svg -b transparent
+npx -y @mermaid-js/mermaid-cli -i images/diagram_uvault_workflow.mmd -o images/diagram_uvault_workflow.svg -b transparent
+npx -y @mermaid-js/mermaid-cli -i images/diagram_release_lifecycle.mmd -o images/diagram_release_lifecycle.svg -b transparent
+```

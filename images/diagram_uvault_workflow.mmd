@@ -1,0 +1,20 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#eef2f7', 'primaryTextColor': '#2b3a4a', 'primaryBorderColor': '#0288d1', 'lineColor': '#0288d1', 'tertiaryColor': '#f4f6f9'}}}%%
+flowchart TD
+    A["1. Declare Intent\nuvault add <pkg> <url> --pr <nr>"] --> B["2. Vault & Freeze\nuvault sync"]
+    B -->|"Push immutable tag"| B1["[tool.uv.sources]\ntag = 'ppr-a1b2c3d'"]
+
+    B1 --> C["3. Monitor PR\nuvault status"]
+    B1 --> D["4. Local Dev Mode\nuvault develop <pkg> <branch>"]
+    
+    D -->|"Edit code in ./.src/"| D1["[tool.uv.sources]\npath = './.src/...' editable = true"]
+    D1 --> E["5. Release Production\nuvault release"]
+    E -->|"Freeze release tag"| E1["Tag: 1.0.0+apycod.pkg"]
+
+    style A fill:#0288d1,color:#ffffff,stroke:#0288d1
+    style B fill:#0288d1,color:#ffffff,stroke:#0288d1
+    style C fill:#f39c12,color:#ffffff,stroke:#d35400
+    style D fill:#3498db,color:#ffffff,stroke:#2980b9
+    style E fill:#2ecc71,color:#ffffff,stroke:#27ae60
+    style B1 fill:#2b3a4a,color:#ffffff,stroke:#2b3a4a
+    style D1 fill:#2b3a4a,color:#ffffff,stroke:#2b3a4a
+    style E1 fill:#2ecc71,color:#ffffff,stroke:#27ae60

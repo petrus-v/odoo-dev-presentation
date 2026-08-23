@@ -1,0 +1,22 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#eef2f7', 'primaryTextColor': '#2b3a4a', 'primaryBorderColor': '#0288d1', 'lineColor': '#e74c3c', 'tertiaryColor': '#f4f6f9'}}}%%
+flowchart TD
+    subgraph Upstream ["OCA Repository (19.0)"]
+        C1["Commit 1"] --> C2["Commit 2"]
+    end
+
+    subgraph PR ["petrus-v / repo (PR #666 - Force-Pushed!)"]
+        C2 --> NEW_COMMIT["New Commit: e5f6g7h\n(Rebased Branch)"]
+        OLD_COMMIT["❌ Old Commit: a1b2c3d\n(Garbage Collected / Vanished!)"]
+    end
+
+    subgraph CI ["CI / Production Build"]
+        LOCK["uv.lock\nexpects sha: a1b2c3d"]
+        FAIL["💥 uv sync --locked FAILS!\n'fatal: upload-pack: not our ref'"]
+        LOCK -->|"Attempt fetch"| OLD_COMMIT
+        OLD_COMMIT -.->|"404 Not Found"| FAIL
+    end
+
+    style OLD_COMMIT fill:#e74c3c,color:#ffffff,stroke:#c0392b,stroke-width:2px
+    style FAIL fill:#e74c3c,color:#ffffff,stroke:#c0392b,stroke-width:2px
+    style NEW_COMMIT fill:#0288d1,color:#ffffff,stroke:#0288d1
+    style LOCK fill:#2b3a4a,color:#ffffff,stroke:#2b3a4a
