@@ -4,13 +4,17 @@ theme: gaia
 _class: lead
 paginate: true
 backgroundColor: #FFFDF0
-backgroundImage: url('https://marp.app/assets/hero-background.svg')
+# backgroundImage: url('https://marp.app/assets/hero-background.svg')
 style: |
   :root {
     --color-background: #FFFDF0;
     --color-foreground: #5B0B19;
     --color-highlight: #D51E36;
     --color-dimmed: #E05766;
+  }
+  section[data-marpit-advanced-background="background"] > div[data-marpit-advanced-background-container]:has(figure[style*="oca-red"]),
+  figure[style*="oca-red"] {
+    background-color: var(--color-highlight) !important;
   }
   section {
     background-color: var(--color-background);
@@ -111,11 +115,22 @@ style: |
   }
 ---
 
-# **My Odoo Dev Environment: From Dev to Production**
+<style scoped>
+h1, h1 strong {
+  color: var(--color-foreground) !important;
+}
+p, strong {
+  color: var(--color-dimmed) !important;
+}
+</style>
 
-### With `uv`, `hatch-odoo` and **`uvault`** 🚀
+![bg fit right](./images/oca-red.png)
 
-**OCA Days 2026** — Pierre Verkest (APYCOD)
+# **My Odoo development Environment**
+
+### With `uv`, `hatch-odoo` and **`uvault`**
+
+**Pierre Verkest (APYCOD)**
 GitHub: @petrus-v
 
 <!--
@@ -127,9 +142,17 @@ My name is Pierre Verkest from APYCOD, and today I'm excited to talk about how w
 
 # **About**
 
-- **Pierre Verkest** — Odoo Developer @ APYCOD
-- **OCA Contributor** & creator of `uvault`
-- **Context**: Historically, Odoo struggled with standard Python tooling (`addons_path`). Today, it integrates seamlessly (`uv`, `pyproject.toml`)!
+**Pierre Verkest** — An enthusiastic independant python developer @ APYCOD
+
+![bg 25%](./images/petrus-v.png)
+![bg 50%](./images/apycod.png)
+
+- gh: @petrus-v
+- ln: @pierre-verkest
+- OCA Contributor
+- pytest-odoo Contributor
+- Author of `uvault`
+
 
 <!--
 To introduce myself: I'm Pierre Verkest from APYCOD, Odoo developer, OCA contributor, and creator of uvault.
@@ -139,6 +162,8 @@ Historically, Odoo struggled to integrate smoothly with standard Python tooling 
 ---
 
 # **Agenda**
+
+- **Context**: Historically, Odoo struggled with standard Python tooling (`addons_path`). Today, it integrates seamlessly (`uv`, `pyproject.toml`)!
 
 1. 🐍 **Odoo as a Standard Python Project**: Modern tooling (`uv`, PyPI, `whool`, `hatch-odoo`)
 2. 🔀 **Unreleased PR Dependencies**: Working with unmerged OCA Pull Requests
@@ -894,12 +919,13 @@ To summarize the key benefits of this modern stack:
 
 - 📦 **`uv` by Astral**: [github.com/astral-sh/uv](https://github.com/astral-sh/uv)
 - ⚙️ **`hatch-odoo` & `whool`**:
-  - [github.com/sbidoul/hatch-odoo](https://github.com/sbidoul/hatch-odoo)
+  - [github.com/acsone/hatch-odoo](https://github.com/acsone/hatch-odoo)
   - [github.com/sbidoul/whool](https://github.com/sbidoul/whool)
 - 🛡️ **`uvault`**:
   - GitHub Repo: [github.com/petrus-v/uvault](https://github.com/petrus-v/uvault)
   - Documentation: [uvault.apycod.com](https://uvault.apycod.com)
-- 📜 **`pip-preserve-requirements`**: Original inspiration by Stéphane Bidoul.
+- 📜 **pip-preserve-requirements**: Original uvault inspiration by Stéphane Bidoul
+  - [github.com/sbidoul/pip-preserve-requirements](https://github.com/sbidoul/pip-preserve-requirements)
 
 <!--
 Here are key links and resources to explore further:
@@ -913,13 +939,12 @@ Here are key links and resources to explore further:
 
 <!-- _class: lead -->
 
-# **Thank You!**
 
-### Questions & Answers 💬
-
-**OCA Days 2026**
+![bg contain](./images/sponsor.png)
 
 <!--
 Thank you very much for your time and attention!
+Special thanks to our sponsors that make those OCA days possible.
+
 I'm now happy to answer any questions you might have.
 -->
