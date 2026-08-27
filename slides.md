@@ -610,7 +610,7 @@ If the PR author rebases or force-pushes, the old commit hash is **garbage colle
 
 
 ```bash
-$ uv sync --locked
+$ uv sync
   ...
   Updating https://github.com/OCA/repo.git (refs/pull/666/head)
   × Failed to download and build `package @ git+https://github.com/OCA/repo.git@a1b2c3d4e#subdirectory=module`
@@ -623,6 +623,7 @@ $ uv sync --locked
       fatal : distant error : upload-pack: not our ref a1b2c3d4e
 ```
 
+<br/>
 
 > 💥 **CI & Production builds break instantly!**
 
@@ -642,7 +643,10 @@ Running uv sync --locked in CI or Production fails with "upload-pack: not our re
 > 2. 🗑️ **Closed PR or Deleted Branch**: Dependency becomes unavailable.
 > 3. 🔓 **Lack of Immutability**: Pointing to branch names exposes your project to unvetted changes.
 
-### ❓ **How can we preserve these PR commits so our builds never break?**
+<br/><br/>
+<br/><br/>
+
+## **How can we preserve these PR commits so our builds never break ❓**
 
 <!--
 Direct Git URLs are a ticking time bomb for three main reasons:
@@ -655,7 +659,7 @@ So how can we preserve these commits under our own control so our builds remain 
 
 ---
 
-# **The Solution: Controlled Remote Vaulting 🔒**
+# **The Solution: Controlled Remote Repository - Vault repo**
 
 ### Preserve PR commits in an organization-controlled Git Vault
 
@@ -730,92 +734,26 @@ This brings us to section three: a deep dive into uvault, a tool designed specif
 ---
 
 # **What is `uvault`?**
+<br/>
+<br/>
 
-- 🛠️ **Standalone CLI** executed via `uvx` (`uvx --with uvault[github] uvault <command>`).
-- 💡 Inspired by **`pip-preserve-requirements`** (by Stéphane Bidoul).
-- 🎯 **3 Core Pillars**:
+### A tool to manage your VCS dependencies in your `uv` development environment
 
-1. 🔒 **Vaulting (Immutability)**: Archives PR/branch commits into your organization's Vault repository as immutable tags (`pjt-<sha>`).
-2. 💻 **Local Dev Mode**: Switches any dependency into local `editable` mode (`./.src/`) in 1 second to contribute or test.
-3. 📊 **Status Monitoring (`uvault status`)**: Alerts on PR state (merged, closed, new remote commits, orphaned commits).
+<br/>
+
+🛠️ **Standalone CLI** executed via `uvx` (`uvx --with uvault[github] uvault <command>`).
+<br/>
+
+💡 Inspired by **`pip-preserve-requirements`** (by Stéphane Bidoul).
 
 <!--
 uvault is a standalone CLI utility run seamlessly with uvx. It was inspired by Stéphane Bidoul's pip-preserve-requirements.
 
-It stands on three core pillars:
-1. Immutability via Vaulting: it mirrors and freezes PR commits into your organization's private Vault repository using immutable tags formatted as pjt-<sha>.
-2. Instant Local Dev: it switches any dependency into a local editable clone inside ./.src/ in seconds.
-3. Status Monitoring: uvault status actively tracks whether upstream PRs get merged, closed, updated, or rebased.
--->
-
----
-
-# **`uvault` Vaulting Architecture 🛡️**
-
-![bg right:48% contain](images/diagram_vaulting.svg)
-
-### Immutable preservation with `pjt-<sha>` tags
-
-- **`uvault sync`** automatically pushes PR commits to your organization's Vault repository (`my-org-vault`).
-- Creates an immutable tag like `pjt-a1b2c3d` (or `pjt-19.0.1.2.3`).
-- Updates `pyproject.toml` to point to your secure Vault tag.
-
-> 🔒 **Guarantee**: Even if the upstream PR is rebased or deleted, your Vault retains the commit ➡️ **CI/Prod builds NEVER break!**
-
-<!--
-Here is how uvault solves the problem. It mirrors and tags the exact PR commit inside your organization's Vault repository. Even if the author force-pushes or deletes the PR upstream, your Vault retains the exact commit permanently.
--->
-
----
-
----
-
-# **`uvault` Global Workflow**
-
-![bg right:48% contain](images/diagram_uvault_workflow.svg)
-
-### End-to-end VCS lifecycle
-
-1. **`uvault add`**: Declare VCS intention.
-2. **`uvault sync`**: Archive commit to Vault (`pjt-<sha>` / `tag_prefix`).
-3. **`uvault status`**: Monitor upstream PR status.
-4. **`uvault develop`**: Switch to local editable clone (`./.src/`).
-5. **`uvault release`**: Freeze immutable release tag on deploy.
-
-<!--
-Here is the overall workflow of uvault.
-First, you declare your dependency intention using uvault add.
-Second, uvault sync fetches the target commit and creates an immutable tag in your Vault repository.
-From there, you can monitor upstream changes with uvault status or switch into local development mode with uvault develop.
-Finally, when preparing a production release, uvault release freezes immutable production tags.
--->
-
----
-
-# **User Configuration (`~/.config/uvault/config.toml`)**
-
-### Machine-level configuration for automation
-
-```toml
-# ~/.config/uvault/config.toml
-[remotes]
-petrus-v = "ssh://git@github.com/petrus-v"  # Custom remotes added on `uvault develop`
-
-[github]
-token = "github_pat_11A...xxx"              # GitHub PAT for API queries & auto-forking
-```
-
-### Key usages:
-- 🔑 **`[github] token`** *(requires `uvault[github]`)*:
-  - **`uvault status`**: Queries GitHub API (PR states, labels, force-push detection) without rate limits.
-  - **`uvault sync`**: Enables auto-forking missing repositories into your Vault organization.
-- 🔀 **`[remotes]`**: Used by **`uvault develop`** to auto-add your personal Git remotes when setting up `./.src/` clones for easy pushing.
-
-<!--
-Presenter Note:
-User-level configuration resides in ~/.config/uvault/config.toml.
-The [github] token (used with uvault[github]) unlocks PR status checking and automatic repository forking.
-The [remotes] section automatically configures custom git remotes when running uvault develop so you can push code to your personal fork immediately.
+it aims to help developers to manage VCS dependencies by:
+1. mirroring and freezing PR commits into your organization's private Vault repository using immutable git tags.
+2. easily switching any dependency into a local editable clone.
+3. Actively monitoring upstream PR status (merged, closed, updated, or rebased).
+4. Documenting which code was in use for every release.
 -->
 
 ---
@@ -825,51 +763,78 @@ The [remotes] section automatically configures custom git remotes when running u
 Instead of manually editing `pyproject.toml`, declare a VCS dependency **intention**:
 
 ```bash
-uvx uvault add odoo-addon-partner-firstname \
-  https://github.com/OCA/partner-contact \
-  --pr 123 \
-  --subdirectory setup/partner_firstname
+uvx uvault add odoo-addon-web_switch_company_favorite \
+  https://github.com/OCA/multi-company \
+  --pr 1020 \
+  --subdirectory web_switch_company_favorite
 ```
 
 ### Result in `pyproject.toml`:
 
 ```toml
 [tool.uvault.sources]
-odoo-addon-partner-firstname = { git = "https://github.com/OCA/partner-contact", pr = 123, subdirectory = "setup/partner_firstname" }
+odoo-addon-web_switch_company_favorite = {git = "https://github.com/OCA/multi-company", rev = "refs/pull/1020/head", subdirectory = "web_switch_company_favorite"}
 ```
 
 > ℹ️ *Note: `uvault add` configures the intention in `[tool.uvault.sources]`. It does not touch `[tool.uv.sources]` or lockfile yet.*
 
 <!--
-Presenter Note: Step 1 (git checkout step-1-uvault)
+Presenter Note: Step 1 (git checkout step-uvault-1)
 Instead of hand-editing pyproject.toml, you run uvault add providing package name, repo URL, PR number, and subdirectory.
 uvault records this intention under [tool.uvault.sources].
 -->
 
 ---
+# **Configure your project before the first sync**
+<br/>
 
+```toml
+[tool.uvault]
+tag_prefix = "ocadays26"
+tag_template = "{tag_prefix}-{sha}"
+dev_directory = ".src/"
+
+# VCS Vault Configuration
+[[tool.uvault.vcs_vaults]]
+provider = "github.com"
+owner = "apycod"
+default = true
+```
+<br/><br/>
+<br/>
+
+
+More config options available in the documentation: [https://uvault.apycod.com/reference/#pyprojecttoml-configuration](
+https://uvault.apycod.com/reference/#pyprojecttoml-configuration)
+
+---
 # **Vault & Freeze (`uvault sync`)**
 
 ### Run synchronization
 
 ```bash
-uvx uvault sync
+uvx uvault[github] sync
 ```
 
 ### What happens under the hood? ⚙️
 
-1. **Fetches** the exact commit of PR #123 (`refs/pull/123/head`).
+1. **Fetches** the exact commit of PR `#1020` (`refs/pull/1020/head`).
 2. **Auto-forks** via GitHub API if repo doesn't exist in your Vault org yet.
-3. **Pushes immutable tag** (`pjt-<sha>`) to your Vault repo (`my-org-vault/partner-contact`).
+3. **Pushes immutable tag** (`pjt-<sha>`) to your Vault repo (`apycod/multi-company`).
 4. **Updates `[tool.uv.sources]`** with the secure Vault reference:
 
 ```toml
 [tool.uv.sources]
-odoo-addon-partner-firstname = { git = "https://github.com/my-org-vault/partner-contact", tag = "pjt-a1b2c3d4e5f6...", subdirectory = "setup/partner_firstname" }
+odoo-addon-web_switch_company_favorite = {git = "https://github.com/apycod/multi-company.git", tag = "ocadays26-d9309...", subdirectory = "web_switch_company_favorite"}
 ```
 
-> 🏷️ *Tag prefix note: Default tag prefix is `pjt-` (e.g., `pjt-a1b2c3d4e`). Custom prefixes (e.g., `tag_prefix = "apycod"`) are configurable in `[tool.uvault]`!*
 > 🔑 *Note: Auto-forking requires `uvault[github]` and `[github] token` in `~/.config/uvault/config.toml`.*
+
+### Don't forget to update `uv.lock` file after `uvault sync`
+
+```bash
+uv sync
+```
 
 <!--
 Presenter Note: Step 2 (git checkout step-2-uvault)
@@ -922,25 +887,30 @@ This command queries GitHub API to give you clear diagnostics:
 
 # **Ultra-Fast Local Dev (`uvault develop`)**
 
-Need to modify the OCA PR or add a feature locally?
+Need to modify the OCA PR or add a feature locally, let's fix a bug in partner_firstname
 
 ```bash
-uvx uvault develop odoo-addon-partner-firstname my-feature-branch
+# add uvault reference on OCA 19.0 branch (deduce github repository from existing package localy or pypi metadata)
+uvx uvault add odoo-addon-partner-firstname --branch 19.0 --subdirectory partner_firstname
+uvx uvault develop odoo-addon-partner-firstname 19.0-partner_firstname-fix
 ```
 
 ### Automatic actions performed by `uvault develop`:
-1. **Clones** repo to `./.src/partner-contact` & configures remotes (`origin`, `vault`, + custom remotes from `config.toml` like `petrus-v`).
+
+1. **Clones** repo to `.src/odoo-addon-partner-firstname` & configures remotes (`origin`, `vault`, + custom remotes from `config.toml` like `petrus-v`).
 2. **Switches `pyproject.toml`** to local `editable` mode (`path = "./.src/..."`).
 3. Run **`uv sync`**: local changes are instantly live in Odoo!
 
-> 💡 *Pro-Tip*: Custom remotes in `~/.config/uvault/config.toml` under `[remotes]` (e.g., `petrus-v = "ssh://git@github.com/petrus-v"`) are auto-added so you can `git push` to your fork effortlessly!
+> 💡 *Pro-Tip*: Custom remotes in `~/.config/uvault/config.toml` under `[remotes]` so you can `git push` to your fork effortlessly!
+<br/>
+
 > 🛡️ **Safety Net (`uvault-check`)**: Prevent committing local editables with `uvault`:
 
 ```yaml
 - repo: https://github.com/petrus-v/uvault
   rev: v0.6.1
   hooks:
-    - id: uvault-check   # Reverts editables & restores Vault sources before uv-lock!
+    - id: uvault-check   # Reverts editables & restores Vault sources before uv-lock pre-commit hook!
 ```
 
 <!--
@@ -952,24 +922,104 @@ Use uvault-check in pre-commit (placed before Astral's uv-lock hook) to ensure e
 
 ---
 
-# **Release Lifecycle & PEP 440 (`uvault release`)**
+# **`uvault` Vaulting Architecture 🛡️**
+<!-- 
+![bg right:48% contain](images/diagram_vaulting.svg) -->
 
-![bg right:48% contain](images/diagram_release_lifecycle.svg)
+### Immutable preservation with git tags
 
-### PEP 440 Versioning Rules
+- **`uvault sync`** or **`uvault release`** automatically pushes PR commits to 
+  your organization's Vault repository (`apycod`).
+- Creates an immutable tag like `ocadays26-a1b2c3d` (or `ocadays26-19.0.1.2.3`).
+- Updates `pyproject.toml` to point to your secure Vault tag.
+
+
+<div align="center">
+
+![width:720px](images/diagram_pr_dependency-with-uvault.svg)
+
+</div>
+
+> 🔒 **Guarantee**: Even if the upstream PR is rebased or deleted, your Vault retains the commit ➡️ **CI/Prod builds NEVER break!**
+
+<!--
+Here is how uvault solves the problem. It mirrors and tags the exact PR commit inside your organization's Vault repository. Even if the author force-pushes or deletes the PR upstream, your Vault retains the exact commit permanently.
+-->
+
+---
+
+# **`uvault` Global Workflow**
+
+![bg right:48% contain](images/diagram_uvault_workflow.svg)
+
+### End-to-end VCS lifecycle
+
+1. **`uvault add`**: Declare VCS intention.
+2. **`uvault sync`**: Archive commit to Vault (`pjt-<sha>` / `tag_prefix`).
+3. **`uvault status`**: Monitor upstream PR status.
+4. **`uvault develop`**: Switch to local editable clone (`./.src/`).
+5. **`uvault release`**: Freeze immutable release tag on deploy.
+
+<!--
+Here is the overall workflow of uvault.
+First, you declare your dependency intention using uvault add.
+Second, uvault sync fetches the target commit and creates an immutable tag in your Vault repository.
+From there, you can monitor upstream changes with uvault status or switch into local development mode with uvault develop.
+Finally, when preparing a production release, uvault release freezes immutable production tags.
+-->
+
+---
+
+# **User Configuration (`~/.config/uvault/config.toml`)**
+
+### Machine-level configuration for automation
+
+```toml
+# ~/.config/uvault/config.toml
+[remotes]
+petrus-v = "ssh://git@github.com/petrus-v"  # Custom remotes added on `uvault develop`
+
+[github]
+token = "github_pat_11A...xxx"              # GitHub PAT for API queries & auto-forking
+```
+
+### Key usages:
+- 🔑 **`[github] token`** *(requires `uvault[github]`)*:
+  - **`uvault status`**: Queries GitHub API (PR states, labels, force-push detection) without rate limits.
+  - **`uvault sync`**: Enables auto-forking missing repositories into your Vault organization.
+- 🔀 **`[remotes]`**: Used by **`uvault develop`** to auto-add your personal Git remotes when setting up `./.src/` clones for easy pushing.
+
+<!--
+Presenter Note:
+User-level configuration resides in ~/.config/uvault/config.toml.
+The [github] token (used with uvault[github]) unlocks PR status checking and automatic repository forking.
+The [remotes] section automatically configures custom git remotes when running uvault develop so you can push code to your personal fork immediately.
+-->
+
+---
+# **My Release Lifecycle**
+
+### **PEP 440**
+
 `1.0.1.dev0` (dev) < `1.0.1` (final release) < `1.0.2.dev0`.
 
 ### Automation with `bump-my-version`:
 
+![width:800px](images/uvault-release-workflow.svg)
+
 ```bash
-# 1. In dev: pyproject.toml version = 1.0.1.dev0
+# 1. In dev: pyproject.toml version = 1.2.0.dev0
 # 2. Final Production Release tag:
 uvx bump-my-version bump release
-# -> Pre-commit hook runs `uvault release` & freezes tag v1.0.1!
-
+# -> bump-my-version pre-commit hook runs `uvault release` & freezes tag v1.2.0!
 # 3. Next Dev cycle:
-uvx bump-my-version bump patch --no-tag  # -> moves to 1.0.2.dev0
+uvx bump-my-version bump minor --no-tag  # -> moves to 1.3.0.dev0
 ```
+
+
+
+Example of bump-my-version configuration that triggers uvault release: [https://uvault.apycod.com/how-to/#recommended-bump-my-version-configuration](https://uvault.apycod.com/how-to/#recommended-bump-my-version-configuration)
+
 
 <!--
 Presenter Note: Step 5 (git checkout step-5-uvault)
