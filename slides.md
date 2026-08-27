@@ -683,6 +683,34 @@ Finally, when preparing a production release, uvault release freezes immutable p
 
 ---
 
+# **User Configuration (`~/.config/uvault/config.toml`)**
+
+### Machine-level configuration for automation
+
+```toml
+# ~/.config/uvault/config.toml
+[remotes]
+petrus-v = "ssh://git@github.com/petrus-v"  # Custom remotes added on `uvault develop`
+
+[github]
+token = "github_pat_11A...xxx"              # GitHub PAT for API queries & auto-forking
+```
+
+### Key usages:
+- 🔑 **`[github] token`** *(requires `uvault[github]`)*:
+  - **`uvault status`**: Queries GitHub API (PR states, labels, force-push detection) without rate limits.
+  - **`uvault sync`**: Enables auto-forking missing repositories into your Vault organization.
+- 🔀 **`[remotes]`**: Used by **`uvault develop`** to auto-add your personal Git remotes when setting up `./.src/` clones for easy pushing.
+
+<!--
+Presenter Note:
+User-level configuration resides in ~/.config/uvault/config.toml.
+The [github] token (used with uvault[github]) unlocks PR status checking and automatic repository forking.
+The [remotes] section automatically configures custom git remotes when running uvault develop so you can push code to your personal fork immediately.
+-->
+
+---
+
 # **Declare Intent (`uvault add`)**
 
 Instead of manually editing `pyproject.toml`, declare a VCS dependency **intention**:
@@ -732,6 +760,7 @@ odoo-addon-partner-firstname = { git = "https://github.com/my-org-vault/partner-
 ```
 
 > 🏷️ *Tag prefix note: Default tag prefix is `pjt-` (e.g., `pjt-a1b2c3d4e`). Custom prefixes (e.g., `tag_prefix = "apycod"`) are configurable in `[tool.uvault]`!*
+> 🔑 *Note: Auto-forking requires `uvault[github]` and `[github] token` in `~/.config/uvault/config.toml`.*
 
 <!--
 Presenter Note: Step 2 (git checkout step-2-uvault)
@@ -769,6 +798,8 @@ VCS Metadata:
 - ⚡ **New Remote Commits**: New commits pushed to PR (`uvault sync --update` to fetch).
 - ⚠️ **Orphaned Commit**: Upstream PR was rebased/force-pushed! Your Vault retains the old commit: **your prod build remains 100% functional**!
 
+> 🔑 *Requires `uvault[github]` & `[github] token` in `~/.config/uvault/config.toml` to query GitHub API.*
+
 <!--
 Presenter Note: Step 3 (git checkout step-3-uvault)
 This command queries GitHub API to give you clear diagnostics:
@@ -789,10 +820,11 @@ uvx uvault develop odoo-addon-partner-firstname my-feature-branch
 ```
 
 ### Automatic actions performed by `uvault develop`:
-1. **Clones** repo to `./.src/partner-contact` & configures remotes.
+1. **Clones** repo to `./.src/partner-contact` & configures remotes (`origin`, `vault`, + custom remotes from `config.toml` like `petrus-v`).
 2. **Switches `pyproject.toml`** to local `editable` mode (`path = "./.src/..."`).
 3. Run **`uv sync`**: local changes are instantly live in Odoo!
 
+> 💡 *Pro-Tip*: Custom remotes in `~/.config/uvault/config.toml` under `[remotes]` (e.g., `petrus-v = "ssh://git@github.com/petrus-v"`) are auto-added so you can `git push` to your fork effortlessly!
 > 🛡️ **Safety Net (`uvault-check`)**: Prevent committing local editables with `uvault`:
 
 ```yaml
