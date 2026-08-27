@@ -165,15 +165,17 @@ Historically, Odoo struggled to integrate smoothly with standard Python tooling 
 
 - **Context**: Historically, Odoo struggled with standard Python tooling (`addons_path`). Today, it integrates seamlessly (`uv`, `pyproject.toml`)!
 
-1. 🐍 **Odoo as a Standard Python Project**: Modern tooling (`uv`, PyPI, `whool`, `hatch-odoo`)
-2. 🔀 **Unreleased PR Dependencies**: Working with unmerged OCA Pull Requests
-3. 🛡️ **DEEP DIVE `uvault`**: Vaulting, local editable dev & release lifecycle
+1. 🐍 **Odoo as a Standard Python Project**: Modern tooling (`uv`, PyPI, `whool`, Python Namespace Packages)
+2. ⚙️ **Dedicated Odoo Build Backend**: Streamlining Odoo packaging with `hatch-odoo`
+3. 🔀 **Unreleased PR Dependencies**: Working with unmerged OCA Pull Requests
+4. 🛡️ **DEEP DIVE `uvault`**: Vaulting, local editable dev & release lifecycle
 
 <!--
 Here is our agenda today:
-1. Managing an Odoo project like any standard Python project using uv, PyPI, hatch-odoo, and editable local sources.
-2. Working with unreleased PR dependencies and handling unmerged OCA Pull Requests.
-3. A deep dive into uvault for vaulting PRs, managing local editable workflows, and release lifecycles.
+1. Managing an Odoo project like a standard Python project using uv, PyPI, whool, and Python namespace packages.
+2. Using a dedicated Odoo build backend (hatch-odoo) for flexible addons_dirs and dynamic dependency management.
+3. Working with unreleased PR dependencies and handling unmerged OCA Pull Requests.
+4. A deep dive into uvault for vaulting PRs, managing local editable workflows, and release lifecycles.
 -->
 
 ---
@@ -216,7 +218,7 @@ In milliseconds, uv initializes a clean Python repository with pyproject.toml an
 
 # **Installing Odoo Core & Custom Addon**
 
-### Custom addon: `odoo/addons/ocadays_2026/__manifest__.py`
+### Custom addon: `src/odoo/addons/ocadays_2026/__manifest__.py`
 
 ```python
 {
@@ -242,12 +244,12 @@ odoo = { git = "https://github.com/OCA/OCB.git", branch = "19.0" }
 
 <!--
 Presenter Note: Step 1 (git checkout step-1)
-We create our custom Odoo module inside odoo/addons/ocadays_2026 and declare Odoo 19.0 from OCB git repository in pyproject.toml.
+We create our custom Odoo module inside src/odoo/addons/ocadays_2026 and declare Odoo 19.0 from OCB git repository in pyproject.toml.
 -->
 
 ---
 
-# **Running Odoo with `uv run` 🚀**
+# **Running Odoo with `uv run`**
 
 ### Auto-synced virtual environment
 
@@ -257,25 +259,60 @@ uv sync
 
 # Run Odoo CLI with manual --addons-path for local custom module
 uv run odoo \
-  --addons-path=odoo/addons \
+  --addons-path=src/odoo/addons \
   -d ocadays2026 -i ocadays_2026 \
   --stop-after-init
 ```
 
 > 💡 **No `source .venv/bin/activate` needed!** `uv run` syncs and runs inside `.venv` seamlessly.
-> ⚠️ *Note: `--addons-path=odoo/addons` is still required here because local addons are not packaged into `site-packages` yet!*
 
 <!--
 Presenter Note: Step 1 (continued)
-Notice how Odoo starts immediately with uv run. uv handles virtualenv creation and package installation transparently.
-At this stage, we still need --addons-path=odoo/addons for local modules. Next, let's see how hatch-odoo eliminates this!
+Notice how Odoo starts immediately with uv run. uv handles virtualenv creation transparently.
+-->
+
+---
+
+# **Python Namespace Packages (`odoo.addons`)**
+
+### PEP 420: Sharing single namespace across packages
+
+- **Concept**: Allows multiple independent distributions (core Odoo, custom module)
+  to contribute modules to the same top-level Python package: `odoo.addons`.
+- **Configure with `uv_build` backend** in `pyproject.toml`:
+
+```toml
+[tool.uv.build-backend]
+module-name = "odoo.addons"
+namespace = true
+
+[build-system]
+requires = ["uv_build>=0.12.4,<0.13.0"]
+build-backend = "uv_build"
+```
+
+> 💡 *Note: We use `uv_build` backend here (Astral's build backend). Standard backends like `hatchling` or `flit` also support PEP 420 namespace packages, though configuration syntax varies.*
+
+### `--addons-path` is NOW OBSOLETE!
+
+`uv run` links `src/odoo/addons/ocadays_2026` into `.venv` under `odoo.addons` (in editable mode):
+
+```bash
+# No --addons-path needed anymore!
+uv run odoo -d ocadays2026 -i ocadays_2026 --stop-after-init
+```
+
+<!--
+Presenter Note: Step 2 (git checkout step-2)
+By configuring module-name = "odoo.addons" and namespace = true with uv_build, uv exposes our local module inside .venv under odoo.addons in editable mode (PEP 660).
+Now uv run odoo finds ocadays_2026 natively in odoo.addons without requiring --addons-path!
 -->
 
 ---
 
 # **Adding OCA Dependencies (PyPI & `whool`)**
 
-### Update manifest `odoo/addons/ocadays_2026/__manifest__.py`
+### Update manifest `src/odoo/addons/ocadays_2026/__manifest__.py`
 
 ```python
     "depends": ["web", "mis_builder"],
@@ -300,7 +337,7 @@ uv sync
 ```
 
 <!--
-Presenter Note: Step 2 (git checkout step-2)
+Presenter Note: Step 3 (git checkout step-3)
 We add an OCA dependency, mis_builder.
 We add "mis_builder" to our manifest depends and "odoo-addon-mis-builder" to pyproject.toml.
 uv sync fetches the wheel from PyPI alongside all its transitive OCA dependencies!
@@ -348,12 +385,65 @@ Explain how adding site-packages/odoo/addons to the workspace gives full code se
 
 ---
 
-# **Eliminating `addons-path` with `hatch-odoo`**
+# **Reproducibility & Security: `uv.lock`**
 
-### Enable `hatch-odoo` build backend
+### Deterministic & Tamper-proof Lockfile
+
+- **Cross-platform lockfile**: Multi-OS & multi-Python version locking.
+- **Supply Chain Protection**: Verifies SHA256 hashes & Git commits to prevent package tampering.
+- **Strict CI & Production Deployment**:
+  - 🔒 `uv sync --locked`: Fails if `uv.lock` is out-of-sync with `pyproject.toml` (CI assertion).
+  - 🧊 `uv sync --frozen`: Installs directly from `uv.lock` without modifying it (Fast Docker/Prod builds).
+- 📤 **Legacy Export**: `uv export` to `requirements.txt` or standard `pylock.toml` (PEP 751).
+
+> 💡 **Pro-Tip (`pre-commit`)**: Keep `uv.lock` automatically in sync:
+
+```yaml
+- repo: https://github.com/astral-sh/uv-pre-commit
+  rev: 0.12.5
+  hooks:
+    - id: uv-lock
+```
+
+<!--
+Presenter Note:
+uv.lock guarantees absolute reproducibility and supply chain security across all environments.
+By recording and checking SHA256 hashes during uv sync, uv prevents tampered or compromised packages from being installed.
+Explain the difference: --locked asserts that lockfile matches pyproject.toml in CI. --frozen installs strictly from lockfile without modifying it (perfect for fast Docker builds). Mention uv export for legacy tools.
+(However, if a Git dependency commit vanishes upstream, lockfile reproducibility alone cannot restore the missing commit!)
+-->
+
+---
+
+<!-- _class: lead -->
+# **A Dedicated Build Backend for Odoo**
+### Streamlining Odoo packaging with `hatch-odoo`
+
+<!--
+Section 2: Let's discover how dedicated build backends like hatch-odoo make managing Odoo projects even easier.
+-->
+
+---
+
+# **What is a Build Backend? (`hatch` & `hatch-odoo`)**
+
+### Definitions & Ecosystem
+
+- **Build Backend** (PEP 517 / PEP 518): The tool responsible for compiling source code into standard Python distribution packages (`.whl` wheels or `.tar.gz` sdist). Examples: `setuptools`, `flit`, `hatchling`, `uv_build`.
+- **Hatch / Hatchling**: A modern, highly extensible Python build backend that supports custom build and metadata hooks.
+- **`hatch-odoo`**: A specialized Hatch plugin created by **Stéphane Bidoul** (ACSONE) tailored specifically for Odoo projects.
+
+### What value does `hatch-odoo` add?
+1. 📂 **Flexible `addons_dirs`**: Maps any project directory into `odoo.addons` without rigid `src/odoo/addons/` folder constraints.
+2. 🪄 **Dynamic Dependencies**: Automatically resolves PyPI requirements directly from `__manifest__.py`.
+
+---
+
+# **Flexible Addons Paths with `hatch-odoo`**
+
+### Configure `hatch-odoo` build backend in `pyproject.toml`
 
 ```toml
-# pyproject.toml
 [build-system]
 requires = ["hatchling", "hatch-odoo"]
 build-backend = "hatchling.build"
@@ -362,31 +452,53 @@ build-backend = "hatchling.build"
 [tool.hatch.build.hooks.odoo-addons-dirs]
 
 [tool.hatch-odoo]
-addons_dirs = ["odoo/addons"]
+addons_dirs = ["src/odoo/addons"]
 ```
 
-### How `hatch-odoo` solves `addons-path` 🎉
-- Dynamically extends the `odoo.addons` Python namespace package.
-- **`--addons-path` is now completely eliminated!**
-
-```bash
-# No more --addons-path=... parameter required!
-uv run odoo -d ocadays2026 -i ocadays_2026 --stop-after-init
-```
+### Why `addons_dirs` is a game changer
+- Standard `uv_build` namespace requires a strict nested folder layout: `src/odoo/addons/<addon_name>`.
+- **`hatch-odoo`'s `addons_dirs`** allows referencing **any** directory (e.g. `odoo/addons`, `custom_addons`, `third_party/addons`) or multiple directories without deep nesting!
 
 <!--
-Presenter Note: Step 3 (git checkout step-3)
-hatch-odoo leverages Python's namespace package mechanism (via .pth hooks in site-packages) to inject local addons into odoo.addons. No more endless addons-path lines in odoo.conf!
+Presenter Note: Step 4 (git checkout step-4)
+hatch-odoo replaces uv_build as our build backend.
+While uv_build namespace required src/odoo/addons/module nesting, hatch-odoo's addons_dirs lets us point to any project directories like odoo/addons or custom_addons without deep folder nesting!
+-->
+
+---
+
+# **Deep Dive: Under the Hood of `hatch-odoo` 🛠️**
+
+### How `hatch-odoo` connects `addons_dirs` to Python
+
+- **Relevant Python Standards**:
+  - **PEP 420**: Implicit Namespace Packages (`odoo.addons`).
+  - **PEP 517 / PEP 660**: Build backends & editable installs.
+  - **Python `site` module & `.pth` files**: Standard Python mechanism to inject paths into `sys.path` on startup.
+
+### Mechanics in Editable Mode ⚙️
+
+1. 📂 **Symlink Tree**: In editable dev mode, `hatch-odoo` creates `build/__editable_odoo_addons__/odoo/addons/` with symlinks to each installable addon in `addons_dirs`. *(Non-installable addons are skipped)*.
+2. 📄 **`.pth` File**: Injects `<project>_editable_odoo_addons.pth` into `.venv/.../site-packages/` pointing to `build/__editable_odoo_addons__`.
+3. ⚡ **Zero-Copy & PEP 420**: Python's `site` module reads the `.pth` file, adding `build/__editable_odoo_addons__` to `sys.path`. PEP 420 resolves `odoo.addons.<addon>` via symlinks directly to source code!
+
+> 📦 *Production Wheel Mode (`uv build`)*: No symlinks are used. Addons are packaged directly into `odoo/addons/` inside the `.whl` wheel archive.
+
+<!--
+Presenter Note:
+Under the hood, hatch-odoo hooks into Hatchling via PEP 517/660 build hooks.
+In editable mode (dev), it generates a .pth file pointing to build/__editable_odoo_addons__ filled with symlinks to installable addons.
+In production wheel mode (uv build), it packages files directly into the .whl without symlinks.
+Non-installable addons (installable=False) are filtered out of editable symlinks automatically.
 -->
 
 ---
 
 # **Dynamic Dependencies with `hatch-odoo`**
 
-### Declare dependencies in `__manifest__.py`
+### Declare dependencies in `src/odoo/addons/ocadays_2026/__manifest__.py`
 
 ```python
-# odoo/addons/ocadays_2026/__manifest__.py
 "depends": ["web", "mis_builder", "partner_firstname"]
 ```
 
@@ -405,39 +517,11 @@ dependencies = [
 ```
 
 > 🪄 **How it works**: `hatch-odoo` reads manifest `depends`, resolves PyPI packages (`odoo-addon-partner-firstname`), and locks them automatically on `uv sync`!
-> ⚠️ *Trade-off: `uv add` is no longer used; dependencies are single-sourced in `__manifest__.py`.*
+> ⚠️ *Trade-off: `uv add` is no longer used.*
 
 <!--
-Presenter Note: Step 4 (git checkout step-4)
+Presenter Note: Step 5 (git checkout step-5)
 Dynamic dependencies single-source requirements in __manifest__.py. hatch-odoo maps them to PyPI wheels automatically. Mention that uv add is replaced by manifest edits.
--->
-
----
-
-# **Reproducibility & Security: `uv.lock`**
-
-### The role of `uv.lock`
-
-- **Cross-platform lockfile** (multi-OS, multi-Python versions).
-- Stores the **exact** version, Git revision, and SHA256 hash of every dependency (core Odoo, OCA modules, C/Python libs).
-- **Supply Chain Protection**: Verifies SHA256 package hashes at install time to prevent tampered artifacts or PyPI republishing attacks.
-
-> 💡 **Pro-Tip (`pre-commit`)**: Auto-sync and ensure consistency of `uv.lock` synced with your pyproject.toml
-
-```yaml
-- repo: https://github.com/astral-sh/uv-pre-commit
-  rev: 0.12.5
-  hooks:
-    - id: uv-lock
-```
-
-> 🎯 **Guarantee**: Local Dev == CI == Staging == Production (Deterministic & Tamper-proof).
-
-<!--
-uv.lock guarantees absolute reproducibility and supply chain security across all environments.
-By recording and checking SHA256 hashes during `uv sync`, uv prevents tampered or compromised packages from being installed.
-Key commands: `uv sync` (sync venv with lockfile), `uv lock` (generate/update), `uv tree` (inspect graph).
-However, if a Git dependency commit vanishes upstream, lockfile reproducibility alone cannot restore the missing commit!
 -->
 
 ---
@@ -469,7 +553,7 @@ odoo-addon-mis-builder = { git = "https://github.com/OCA/mis-builder.git", rev =
 > 💡 **Pro-Tip (Transitive Dependencies)**: For `[tool.uv.sources]` to apply to a *transitive* (sub-dependency) module, it must be explicitly declared as a direct requirement!
 
 <!--
-Presenter Note: Step 5 (git checkout step-5)
+Presenter Note: Step 6 (git checkout step-6)
 In real projects, we often need unmerged bugfixes or features from open OCA PRs.
 By adding a source override in tool.uv.sources pointing to refs/pull/827/head, uv pulls directly from the Git PR branch.
 Tip: To override a transitive sub-dependency with a Git PR, make sure to list it as a direct dependency so tool.uv.sources resolves it!
@@ -509,7 +593,7 @@ odoo-addon-mis-builder = { path = ".src/mis-builder/mis_builder", editable = tru
 > ⚡ **Instant feedback**: Any code modification in `.src/mis-builder/mis_builder` is instantly live in Odoo without re-installing!
 
 <!--
-Presenter Note: Step 6 (git checkout step-6)
+Presenter Note: Step 7 (git checkout step-7)
 When you need to work on the PR locally, switch the source to path = ".src/..." with editable = true. Your local edits are picked up immediately by Odoo.
 -->
 
@@ -544,7 +628,7 @@ $ uv sync --locked
 
 
 <!--
-Presenter Note: Step 7 (git checkout step-7)
+Presenter Note: Step 8 (git checkout step-8)
 Back to PR reference. But here lies the dangerous trap.
 As shown in the diagram, if the PR author rebases or force-pushes on GitHub, the targeted commit hash vanishes.
 Running uv sync --locked in CI or Production fails with "upload-pack: not our ref"!
