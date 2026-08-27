@@ -3,19 +3,23 @@ marp: true
 theme: gaia
 _class: lead
 paginate: true
-backgroundColor: #ffffff
+backgroundColor: #FFFDF0
 backgroundImage: url('https://marp.app/assets/hero-background.svg')
 style: |
   :root {
-    --color-background: #ffffff;
-    --color-foreground: #2b3a4a;
-    --color-highlight: #0288d1;
-    --color-dimmed: #6c757d;
+    --color-background: #FFFDF0;
+    --color-foreground: #5B0B19;
+    --color-highlight: #D51E36;
+    --color-dimmed: #E05766;
+  }
+  section {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
   }
   section:not(.lead) {
     font-size: 100%;
     padding: 25px 150px 75px 200px;
-    color: #2b3a4a;
+    color: var(--color-foreground);
     display: flex;
     flex-direction: column;
     justify-content: left;
@@ -50,22 +54,22 @@ style: |
   }
   h1 {
     font-size: 1.6em;
-    color: #0288d1;
+    color: var(--color-highlight);
   }
   h2 {
     font-size: 1.25em;
-    color: #2b3a4a;
+    color: var(--color-foreground);
   }
   h3 {
     font-size: 1.05em;
-    color: #0288d1;
+    color: var(--color-highlight);
   }
   p, ul, ol {
     line-height: 1.35;
-    color: #2b3a4a;
+    color: var(--color-foreground);
   }
   strong {
-    color: #0288d1;
+    color: var(--color-highlight);
   }
   pre {
     font-size: 85%;
@@ -82,28 +86,28 @@ style: |
     background-color: transparent;
   }
   code {
-    background-color: #eef2f7;
-    color: #d63384;
+    background-color: rgba(224, 87, 102, 0.12);
+    color: var(--color-highlight);
     padding: 0.1em 0.3em;
     border-radius: 4px;
     font-weight: bold;
   }
   blockquote {
-    background: #f0f4f8;
-    border-left: 6px solid #0288d1;
+    background: rgba(224, 87, 102, 0.08);
+    border-left: 6px solid var(--color-dimmed);
     padding: 8px 14px;
     font-size: 95%;
-    color: #2b3a4a;
+    color: var(--color-foreground);
     text-align: left;
   }
   table {
     font-size: 85%;
     width: 100%;
-    color: #2b3a4a;
+    color: var(--color-foreground);
   }
   th {
-    background-color: #eef2f7;
-    color: #0288d1;
+    background-color: rgba(224, 87, 102, 0.15);
+    color: var(--color-highlight);
   }
 ---
 
