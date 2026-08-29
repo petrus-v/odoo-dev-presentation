@@ -922,28 +922,28 @@ Use uvault-check in pre-commit (placed before Astral's uv-lock hook) to ensure e
 
 ---
 
-# **`uvault` Vaulting Architecture 🛡️**
-<!-- 
-![bg right:48% contain](images/diagram_vaulting.svg) -->
+# **Freeze for Production (`uvault release`)**
 
-### Immutable preservation with git tags
+### Ensure 100% immutable builds for production deployments
 
-- **`uvault sync`** or **`uvault release`** automatically pushes PR commits to 
-  your organization's Vault repository (`apycod`).
-- Creates an immutable tag like `ocadays26-a1b2c3d` (or `ocadays26-19.0.1.2.3`).
-- Updates `pyproject.toml` to point to your secure Vault tag.
+```bash
+# Freeze all vaulted dependencies to the current release version
+uvx uvault release
+```
 
+### What happens under the hood? 🏷️
 
-<div align="center">
+1. **Reads project version** from `pyproject.toml` (e.g., `19.0.1.0.0`).
+2. **Tags Vault repositories** with release tags (e.g., `ocadays26-19.0.1.0.0`).
+3. **Updates `[tool.uv.sources]`** to point to these new release tags.
+4. **Audit trail & reproducibility**: Every production build is strictly tied to immutable release tags across all dependencies.
 
-![width:720px](images/diagram_pr_dependency-with-uvault.svg)
-
-</div>
-
-> 🔒 **Guarantee**: Even if the upstream PR is rebased or deleted, your Vault retains the commit ➡️ **CI/Prod builds NEVER break!**
+> 💡 *Integrated directly with release tools like `bump-my-version` via pre-commit hooks.*
 
 <!--
-Here is how uvault solves the problem. It mirrors and tags the exact PR commit inside your organization's Vault repository. Even if the author force-pushes or deletes the PR upstream, your Vault retains the exact commit permanently.
+Presenter Note:
+When preparing a production release, uvault release ensures all your vaulted dependencies are tagged with the exact release version.
+This gives you an immutable snapshot in your Vault for every production release, making rollbacks and historical builds 100% reproducible.
 -->
 
 ---
@@ -1045,6 +1045,34 @@ To summarize the key benefits of this modern stack:
 - OCA PR dependencies are securely vaulted with immutable tags.
 - Local dev switching takes a single command.
 - And CI/Production builds are completely protected from deleted or rebased upstream commits.
+-->
+
+---
+
+# **`uvault` Future Evolutions & Roadmap 🚀**
+
+### Ideas & upcoming improvements
+
+- 🌉 **`gitaggregator` Integration (Multi-PR per package)**:
+  - Aggregate multiple PRs into a single package dependency before vaulting (when an Odoo module relies on multiple unmerged PRs).
+- 🔍 **PR Diff Inspection (`uvault status`)**:
+  - Preview git diff directly before deciding to run `uvault sync --update`.
+- 🗄️ **Multi-Vault Support**:
+  - Explicitly map specific packages to dedicated Vault organizations/repos.
+- 🦊 **Multi-Forge Battle-Testing**:
+  - Battle-test GitLab integration (backend already structured).
+  - Add support for Gitea / Forgejo.
+- ⚡ **Auto-`uv sync` Option** (To Be Determined):
+  - Optional flag to trigger `uv sync` immediately after `uvault sync` (currently decoupled for flexibility).
+
+<!--
+Presenter Note:
+Looking ahead, several evolutions are being explored for uvault:
+- Combining multiple PRs per package via gitaggregator integration (when a module depends on several unmerged PRs).
+- Seeing the exact diff of a PR before updating it.
+- Extending and battle-testing beyond GitHub (GitLab, Gitea).
+- Explicit multi-vault mappings per package.
+- Optional automatic uv sync execution after uvault sync.
 -->
 
 ---
