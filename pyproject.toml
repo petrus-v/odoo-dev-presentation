@@ -7,7 +7,20 @@ authors = [
     { name = "Pierre Verkest", email = "pierre@verkest.fr" }
 ]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+  "odoo>=19.0",
+  "lxml>=5.2.1",
+  "lxml_html_clean",
+  "Werkzeug==3.0.1",
+  "PyPDF==5.4.0",
+  "freezegun",
+]
+
+[tool.uv]
+exclude-dependencies = ["PyPDF2"]
+
+[tool.uv.sources]
+odoo = {git = "https://github.com/OCA/OCB.git", branch = "19.0"}
 
 [project.scripts]
 ocadays = "ocadays:main"
