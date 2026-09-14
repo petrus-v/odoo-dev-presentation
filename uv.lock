@@ -899,6 +899,7 @@ dependencies = [
     { name = "lxml" },
     { name = "lxml-html-clean" },
     { name = "odoo" },
+    { name = "odoo-addon-mis-builder" },
     { name = "pypdf" },
     { name = "werkzeug" },
 ]
@@ -909,6 +910,7 @@ requires-dist = [
     { name = "lxml", specifier = ">=5.2.1" },
     { name = "lxml-html-clean" },
     { name = "odoo", git = "https://github.com/OCA/OCB.git?branch=19.0" },
+    { name = "odoo-addon-mis-builder", specifier = ">=19.0.1.2.0.2" },
     { name = "pypdf", specifier = "==5.4.0" },
     { name = "werkzeug", specifier = "==3.0.1" },
 ]
@@ -958,6 +960,43 @@ dependencies = [
     { name = "xlsxwriter" },
     { name = "xlwt" },
     { name = "zeep" },
+]
+
+[[package]]
+name = "odoo-addon-date-range"
+version = "19.0.1.0.0.6"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "odoo" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0a/ea/cca035f476494e1131ebcc5541b6f5358148348c68ef67ae31c715229db2/odoo_addon_date_range-19.0.1.0.0.6-py3-none-any.whl", hash = "sha256:acfa91d2dae8948d90229bfa9eab2ba17d776a3ef7004116507ffa070da360a9", size = 2303101, upload-time = "2026-09-13T04:19:28.41Z" },
+]
+
+[[package]]
+name = "odoo-addon-mis-builder"
+version = "19.0.1.2.0.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "odoo" },
+    { name = "odoo-addon-date-range" },
+    { name = "odoo-addon-report-xlsx" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d3/d8/25786b26839dfa59fb7a526bc42a61f158414ddc8b7402f2a8e34044ae3e/odoo_addon_mis_builder-19.0.1.2.0.2-py3-none-any.whl", hash = "sha256:02bb1967032ff0c84362141443445ae5e70947eee8d243c2101d8db105608a08", size = 627268, upload-time = "2026-09-10T17:46:02.405Z" },
+]
+
+[[package]]
+name = "odoo-addon-report-xlsx"
+version = "19.0.1.0.2.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "odoo" },
+    { name = "xlrd" },
+    { name = "xlsxwriter" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/4a/e2/f64bc4ad0e79d6a78f42a7313d4368f3246ec14d441cfc9293c890b9c5fe/odoo_addon_report_xlsx-19.0.1.0.2.2-py3-none-any.whl", hash = "sha256:bb269e89d5cb5af13353c921a86e29d56ade37f63b2598fc2baf470c30d6c551", size = 47725, upload-time = "2026-07-07T04:02:11.838Z" },
 ]
 
 [[package]]
