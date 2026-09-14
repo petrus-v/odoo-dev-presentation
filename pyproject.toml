@@ -22,8 +22,8 @@ exclude-dependencies = ["PyPDF2"]
 [tool.uv.sources]
 odoo = {git = "https://github.com/OCA/OCB.git", branch = "19.0"}
 
-[project.scripts]
-ocadays = "ocadays:main"
+[tool.hatch.build.targets.wheel]
+packages = ["src/odoo"]
 
 [build-system]
 requires = ["hatchling"]
