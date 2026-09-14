@@ -617,12 +617,12 @@ git clone https://github.com/OCA/mis-builder .src/mis-builder
 odoo-addon-mis-builder = { path = ".src/mis-builder/mis_builder", editable = true }
 ```
 
-> ⚡ **Instant feedback**: Any code modification in `.src/mis-builder/mis_builder` is instantly live in Odoo without re-installing!
+> ⚡ **Instant feedback**: Any code modification in `.src/mis-builder/mis_builder` is instantly live in Odoo without re-installing nor hacking the addons path!
 
 <!--
 Presenter Note: Step 7 (git checkout step-7)
 If you want to edit that OCA PR locally, you clone the repository into .src/ and set path = ".src/..." with editable = true.
-Any changes you make locally are reflected immediately in Odoo without reinstalling!
+Any changes you make locally are reflected immediately in Odoo without reinstalling! No need to hack the addons path!
 -->
 
 ---
