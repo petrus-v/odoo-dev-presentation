@@ -1,0 +1,17 @@
+[project]
+name = "ocadays"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Pierre Verkest", email = "pierre@verkest.fr" }
+]
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+ocadays = "ocadays:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
