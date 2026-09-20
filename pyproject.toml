@@ -26,6 +26,14 @@ odoo = {git = "https://github.com/OCA/OCB.git", branch = "19.0"}
 [tool.hatch.build.targets.wheel]
 packages = ["src/odoo"]
 
+# Enable the hatch-odoo build hook to package the Odoo addons into odoo/addons.
+[tool.hatch.build.hooks.odoo-addons-dirs]
+
+[tool.hatch-odoo]
+# Our addons are in the project root directory.
+addons_dirs = ["src/odoo/addons"]
+
+
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-odoo"]
 build-backend = "hatchling.build"
