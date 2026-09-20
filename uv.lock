@@ -911,7 +911,7 @@ requires-dist = [
     { name = "lxml", specifier = ">=5.2.1" },
     { name = "lxml-html-clean" },
     { name = "odoo", git = "https://github.com/OCA/OCB.git?branch=19.0" },
-    { name = "odoo-addon-mis-builder", specifier = "==19.0.*" },
+    { name = "odoo-addon-mis-builder", git = "https://github.com/OCA/mis-builder.git?subdirectory=mis_builder&rev=refs%2Fpull%2F827%2Fhead" },
     { name = "odoo-addon-partner-firstname", specifier = "==19.0.*" },
     { name = "pypdf", specifier = "==5.4.0" },
     { name = "werkzeug", specifier = "==3.0.1" },
@@ -977,15 +977,12 @@ wheels = [
 
 [[package]]
 name = "odoo-addon-mis-builder"
-version = "19.0.1.2.0.2"
-source = { registry = "https://pypi.org/simple" }
+version = "19.0.1.2.0.4"
+source = { git = "https://github.com/OCA/mis-builder.git?subdirectory=mis_builder&rev=refs%2Fpull%2F827%2Fhead#07d1ba5cb126e242dabafea5beabf92af0155a1e" }
 dependencies = [
     { name = "odoo" },
     { name = "odoo-addon-date-range" },
     { name = "odoo-addon-report-xlsx" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/d3/d8/25786b26839dfa59fb7a526bc42a61f158414ddc8b7402f2a8e34044ae3e/odoo_addon_mis_builder-19.0.1.2.0.2-py3-none-any.whl", hash = "sha256:02bb1967032ff0c84362141443445ae5e70947eee8d243c2101d8db105608a08", size = 627268, upload-time = "2026-09-10T17:46:02.405Z" },
 ]
 
 [[package]]

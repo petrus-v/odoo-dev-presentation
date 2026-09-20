@@ -15,6 +15,7 @@ exclude-dependencies = ["PyPDF2"]
 
 [tool.uv.sources]
 odoo = {git = "https://github.com/OCA/OCB.git", branch = "19.0"}
+odoo-addon-mis-builder = { git = "https://github.com/OCA/mis-builder.git", rev = "refs/pull/827/head", subdirectory = "mis_builder" }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/odoo"]
