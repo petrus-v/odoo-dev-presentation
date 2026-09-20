@@ -910,8 +910,8 @@ requires-dist = [
     { name = "freezegun" },
     { name = "lxml", specifier = ">=5.2.1" },
     { name = "lxml-html-clean" },
-    { name = "odoo", git = "https://github.com/OCA/OCB.git?branch=19.0" },
-    { name = "odoo-addon-mis-builder", git = "https://github.com/OCA/mis-builder.git?subdirectory=mis_builder&rev=refs%2Fpull%2F827%2Fhead" },
+    { name = "odoo", git = "https://github.com/apycod/OCB.git?tag=ocadays26-b9bfddc88e6114f83bac32e47f179f62b016ceb1" },
+    { name = "odoo-addon-mis-builder", git = "https://github.com/apycod/mis-builder.git?subdirectory=mis_builder&tag=ocadays26-07d1ba5cb126e242dabafea5beabf92af0155a1e" },
     { name = "odoo-addon-partner-firstname", specifier = "==19.0.*" },
     { name = "pypdf", specifier = "==5.4.0" },
     { name = "werkzeug", specifier = "==3.0.1" },
@@ -920,7 +920,7 @@ requires-dist = [
 [[package]]
 name = "odoo"
 version = "19.0"
-source = { git = "https://github.com/OCA/OCB.git?branch=19.0#f8577e7d9024b8d2ad82ef9ebcddcc9cbbee5c6d" }
+source = { git = "https://github.com/apycod/OCB.git?tag=ocadays26-b9bfddc88e6114f83bac32e47f179f62b016ceb1#b9bfddc88e6114f83bac32e47f179f62b016ceb1" }
 dependencies = [
     { name = "asn1crypto" },
     { name = "babel" },
@@ -978,7 +978,7 @@ wheels = [
 [[package]]
 name = "odoo-addon-mis-builder"
 version = "19.0.1.2.0.4"
-source = { git = "https://github.com/OCA/mis-builder.git?subdirectory=mis_builder&rev=refs%2Fpull%2F827%2Fhead#07d1ba5cb126e242dabafea5beabf92af0155a1e" }
+source = { git = "https://github.com/apycod/mis-builder.git?subdirectory=mis_builder&tag=ocadays26-07d1ba5cb126e242dabafea5beabf92af0155a1e#07d1ba5cb126e242dabafea5beabf92af0155a1e" }
 dependencies = [
     { name = "odoo" },
     { name = "odoo-addon-date-range" },

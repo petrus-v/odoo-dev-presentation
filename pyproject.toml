@@ -13,9 +13,24 @@ dynamic = ["dependencies"]
 [tool.uv]
 exclude-dependencies = ["PyPDF2"]
 
-[tool.uv.sources]
+[tool.uvault]
+tag_prefix = "ocadays26"
+tag_template = "{tag_prefix}-{sha}"
+dev_directory = ".src/"
+
+# VCS Vault Configuration
+[[tool.uvault.vcs_vaults]]
+provider = "github.com"
+owner = "apycod"
+default = true
+
+[tool.uvault.sources]
 odoo = {git = "https://github.com/OCA/OCB.git", branch = "19.0"}
 odoo-addon-mis-builder = { git = "https://github.com/OCA/mis-builder.git", rev = "refs/pull/827/head", subdirectory = "mis_builder" }
+
+[tool.uv.sources]
+odoo = {git = "https://github.com/apycod/OCB.git", tag = "ocadays26-b9bfddc88e6114f83bac32e47f179f62b016ceb1"}
+odoo-addon-mis-builder = {git = "https://github.com/apycod/mis-builder.git", tag = "ocadays26-07d1ba5cb126e242dabafea5beabf92af0155a1e", subdirectory = "mis_builder"}
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/odoo"]
