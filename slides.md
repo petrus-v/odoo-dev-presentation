@@ -199,7 +199,10 @@ We choose uv because it's insanely fast, manages Python versions seamlessly, use
 ### Repository setup
 
 ```bash
-uv init ocadays-2026-odoo-dev
+uv init \
+  --vcs git \
+  --build-backend hatch \
+  ocadays-2026-odoo-dev
 cd ocadays-2026-odoo-dev
 ```
 
@@ -263,8 +266,8 @@ In pyproject.toml, we declare our project dependencies and point odoo directly t
 ```bash
 # Run Odoo CLI directly (auto-syncs .venv on the fly):
 uv run odoo \
-  --addons-path=src/odoo/addons \
-  -d ocadays2026 -i ocadays_2026 \
+  -d ocadays2026 \
+  -i ocadays_2026 \
   --stop-after-init
 ```
 
@@ -286,6 +289,19 @@ If a teammate adds a dependency, or if you switch git branches, uv resyncs your 
 
 - **Concept**: Allows multiple independent distributions (core Odoo, custom module)
   to contribute modules to the same top-level Python package: `odoo.addons`.
+- **Configure with `hatchling` build backend** in `pyproject.toml`:
+
+```toml
+[tool.hatch.build.targets.wheel]
+packages = ["src/odoo"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+```
+
+> 💡 *Note: We use `hatchling` backend here. Standard backends like `flit` or `uv` also support PEP 420 namespace packages, though configuration syntax varies.*
+
 - **Configure with `uv_build` backend** in `pyproject.toml`:
 
 ```toml
@@ -298,7 +314,9 @@ requires = ["uv_build>=0.12.4,<0.13.0"]
 build-backend = "uv_build"
 ```
 
-> 💡 *Note: We use `uv_build` backend here (Astral's build backend). Standard backends like `hatchling` or `flit` also support PEP 420 namespace packages, though configuration syntax varies.*
+---
+
+# **Python Namespace Packages (`odoo.addons`)**
 
 ### `--addons-path` is NOW OBSOLETE!
 
@@ -344,6 +362,11 @@ uv sync
 # -> Downloads mis_builder, date_range & report_xlsx from PyPI!
 ```
 
+
+> 💡 *Note*: you can use `uv add odoo-addon-mis-builder` to do both:
+>   - add the package dependency to `pyproject.toml`
+>   - sync the virtualenv
+
 <!--
 Presenter Note: Step 3 (git checkout step-3)
 Now, what if we need an OCA addon like mis_builder?
@@ -357,14 +380,25 @@ When we run uv sync, it automatically fetches the wheel from PyPI along with all
 
 ### Did you know EVERY OCA module is published on PyPI?
 
-- Huge thanks to **Stéphane Bidoul** for the **`whool`** build backend!
-- OCA repositories automatically build and publish standard Python wheels on **pypi.org**.
+- OCA module repositories automatically build and publish standard 
+  Python wheels on **pypi.org**.
+- You probably met the `pyproject.toml` in module directory (such  in `mis_builder`):
+
+  ```toml
+  [build-system]
+  requires = ["whool"]
+  build-backend = "whool.buildapi"
+  ```
+
 - Standard PyPI naming convention: `odoo-addon-<module_name>`
   - `mis_builder` ➡️ `odoo-addon-mis-builder`
   - `partner_firstname` ➡️ `odoo-addon-partner-firstname`
+- Huge thanks to **Stéphane Bidoul** for the **`whool`** build backend!
+
+
+### Adding any OCA module is standard Python package management!
 
 ```bash
-# Adding any OCA module is standard Python package management!
 uv add odoo-addon-account-financial-report
 ```
 
@@ -373,6 +407,36 @@ You might ask: how is this possible?
 Huge shoutout to Stéphane Bidoul for creating whool!
 Thanks to whool, every single OCA module is automatically built and published on PyPI as a standard wheel under the odoo-addon- prefix.
 [joke] Yes, installing an OCA addon is now literally as simple as uv add odoo-addon-account-financial-report.
+-->
+
+---
+
+# **What About Odoo Core Itself? 🏗️**
+
+### Why does `git = "https://github.com/OCA/OCB.git"` work with `uv`?
+
+- In standard **`odoo/odoo`**, core addons (`web`, `mail`, ...) reside in the root `/addons` folder.
+- A standard Python build (`pip wheel .` / `uv`) ignores them ➡️ resulting in `No module named web`!
+- **OCA/OCB** natively includes a PEP 517 build backend (by Stéphane Bidoul) that symlinks addons into `odoo/addons` during build.
+- Ensures **all package data** (`.xml`, `.csv`, and `static/` directories) are properly bundled in the wheel via `MANIFEST.in` (`graft odoo`).
+
+### 📢 Help make upstream Odoo installable!
+Upstream Odoo still lacks native PEP 517 wheel packaging:
+- Original PR: [#44001](https://github.com/odoo/odoo/pull/44001)
+- Forward-port for 19.0: [**#232933**](https://github.com/odoo/odoo/pull/232933)
+
+👉 **Please upvote 👍 and make noise on PR #232933** to get upstream Odoo to merge it!
+
+<!--
+Presenter Note:
+Remember in step 1 how we pointed odoo to OCA/OCB in pyproject.toml?
+Why OCB and not odoo/odoo?
+Because upstream Odoo cannot be built into a proper wheel with standard pip/uv tools!
+The core addons like `web` reside in /addons and aren't packaged by default.
+Historically, people trying ad-hoc symlinks often ended up with broken installs missing XML views, CSV security rules, or static JS/CSS assets.
+OCB solves this completely: Stéphane Bidoul's PEP 517 build backend symlinks addons before wheel creation, and MANIFEST.in's `graft odoo` ensures every single .xml, .csv, and static file is bundled.
+There is an open PR on odoo/odoo for 19.0 (PR #232933, forward-ported from #44001).
+Go upvote it and make noise so that upstream Odoo finally adopts standard packaging!
 -->
 
 ---
