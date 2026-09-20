@@ -134,9 +134,9 @@ p, strong {
 GitHub: @petrus-v
 
 <!--
-Hello everyone, and welcome to my talk at OCA Days 2026!
-My name is Pierre Verkest from APYCOD. Today, I want to show you how we can bring modern Python tooling to Odoo development.
-Our goal is simple: make Odoo projects completely Pythonic, simplify onboarding for new devs, and build a smooth pipeline from local dev to production using uv, hatch-odoo, and a new open-source tool called uvault.
+I had a dream ! Managed my Odoo project like any other python project !
+
+Let's see the current state !
 -->
 
 ---
@@ -1046,29 +1046,6 @@ Presenter Note:
 When it's time for a production release, run uvault release.
 It tags all vaulted dependencies with your release version tag (e.g. ocadays26-19.0.1.0.0).
 Then, in CI or Docker, uv sync --frozen --no-dev gives you a 100% deterministic, tamper-proof build.
--->
-
----
-
-# **`uvault` Global Workflow**
-
-![bg right:48% contain](images/diagram_uvault_workflow.svg)
-
-### End-to-end VCS lifecycle
-
-1. **`uvault add`**: Declare VCS intention.
-2. **`uvault sync`**: Archive commit to Vault (`pjt-<sha>` / `tag_prefix`).
-3. **`uvault status`**: Monitor upstream PR status.
-4. **`uvault develop`**: Switch to local editable clone (`./.src/`).
-5. **`uvault release`**: Freeze immutable release tag on deploy.
-
-<!--
-To summarize the full uvault lifecycle:
-1. uvault add to declare intent.
-2. uvault sync to freeze and vault the commit.
-3. uvault status to monitor upstream PR status.
-4. uvault develop for instant local editing.
-5. uvault release to freeze production release tags.
 -->
 
 ---
