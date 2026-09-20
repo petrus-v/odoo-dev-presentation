@@ -900,6 +900,7 @@ dependencies = [
     { name = "lxml-html-clean" },
     { name = "odoo" },
     { name = "odoo-addon-mis-builder" },
+    { name = "odoo-addon-partner-firstname" },
     { name = "pypdf" },
     { name = "werkzeug" },
 ]
@@ -910,7 +911,8 @@ requires-dist = [
     { name = "lxml", specifier = ">=5.2.1" },
     { name = "lxml-html-clean" },
     { name = "odoo", git = "https://github.com/OCA/OCB.git?branch=19.0" },
-    { name = "odoo-addon-mis-builder", specifier = ">=19.0.1.2.0.2" },
+    { name = "odoo-addon-mis-builder", specifier = "==19.0.*" },
+    { name = "odoo-addon-partner-firstname", specifier = "==19.0.*" },
     { name = "pypdf", specifier = "==5.4.0" },
     { name = "werkzeug", specifier = "==3.0.1" },
 ]
@@ -984,6 +986,17 @@ dependencies = [
 ]
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d3/d8/25786b26839dfa59fb7a526bc42a61f158414ddc8b7402f2a8e34044ae3e/odoo_addon_mis_builder-19.0.1.2.0.2-py3-none-any.whl", hash = "sha256:02bb1967032ff0c84362141443445ae5e70947eee8d243c2101d8db105608a08", size = 627268, upload-time = "2026-09-10T17:46:02.405Z" },
+]
+
+[[package]]
+name = "odoo-addon-partner-firstname"
+version = "19.0.1.0.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "odoo" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1b/64/28ac93bd8425a6fdb6eb2caa72a864a44f155e75035ffe7dbf8bd9041161/odoo_addon_partner_firstname-19.0.1.0.2.1-py3-none-any.whl", hash = "sha256:e493ff2955e604ac55f3a117b65c0a96a4cc4b6dc0866d18db7747cc33bebf8f", size = 137068, upload-time = "2026-09-02T03:45:32.318Z" },
 ]
 
 [[package]]

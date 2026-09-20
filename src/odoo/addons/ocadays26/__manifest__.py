@@ -5,6 +5,7 @@
   "depends": [
     "web",
     "mis_builder",
+    "partner_firstname",
   ],
   "author": "Pierre Verkest <pierre.verkest@apycod.fr>",
   "license": "AGPL-3",

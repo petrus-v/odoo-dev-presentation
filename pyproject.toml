@@ -7,15 +7,8 @@ authors = [
     { name = "Pierre Verkest", email = "pierre@verkest.fr" }
 ]
 requires-python = ">=3.14"
-dependencies = [
-  "odoo>=19.0",
-  "lxml>=5.2.1",
-  "lxml_html_clean",
-  "Werkzeug==3.0.1",
-  "PyPDF==5.4.0",
-  "freezegun",
-  "odoo-addon-mis-builder>=19.0.1.2.0.2",
-]
+dynamic = ["dependencies"]
+
 
 [tool.uv]
 exclude-dependencies = ["PyPDF2"]
@@ -28,11 +21,21 @@ packages = ["src/odoo"]
 
 # Enable the hatch-odoo build hook to package the Odoo addons into odoo/addons.
 [tool.hatch.build.hooks.odoo-addons-dirs]
+[tool.hatch.metadata.hooks.odoo-addons-dependencies]
 
 [tool.hatch-odoo]
+odoo_version_override = "19.0"
 # Our addons are in the project root directory.
 addons_dirs = ["src/odoo/addons"]
 
+dependencies = [
+  "odoo>=19.0",
+  "lxml>=5.2.1",
+  "lxml_html_clean",
+  "Werkzeug==3.0.1",
+  "PyPDF==5.4.0",
+  "freezegun",
+]
 
 [build-system]
 requires = ["hatchling", "hatch-odoo"]
