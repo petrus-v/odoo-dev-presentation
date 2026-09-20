@@ -27,7 +27,7 @@ packages = ["src/odoo"]
 [tool.hatch-odoo]
 odoo_version_override = "19.0"
 # Our addons are in the project root directory.
-addons_dirs = ["src/odoo/addons"]
+addons_dirs = ["odoo/addons"]
 
 dependencies = [
   "odoo>=19.0",
