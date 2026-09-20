@@ -911,7 +911,7 @@ requires-dist = [
     { name = "lxml", specifier = ">=5.2.1" },
     { name = "lxml-html-clean" },
     { name = "odoo", git = "https://github.com/OCA/OCB.git?branch=19.0" },
-    { name = "odoo-addon-mis-builder", editable = ".src/mis-builder/mis_builder" },
+    { name = "odoo-addon-mis-builder", git = "https://github.com/OCA/mis-builder.git?subdirectory=mis_builder&rev=refs%2Fpull%2F827%2Fhead" },
     { name = "odoo-addon-partner-firstname", specifier = "==19.0.*" },
     { name = "pypdf", specifier = "==5.4.0" },
     { name = "werkzeug", specifier = "==3.0.1" },
@@ -977,19 +977,12 @@ wheels = [
 
 [[package]]
 name = "odoo-addon-mis-builder"
-version = "19.0.1.2.0.2"
-source = { editable = ".src/mis-builder/mis_builder" }
+version = "19.0.1.2.0.4"
+source = { git = "https://github.com/OCA/mis-builder.git?subdirectory=mis_builder&rev=refs%2Fpull%2F827%2Fhead#07d1ba5cb126e242dabafea5beabf92af0155a1e" }
 dependencies = [
     { name = "odoo" },
     { name = "odoo-addon-date-range" },
     { name = "odoo-addon-report-xlsx" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "odoo", specifier = "==19.0.*" },
-    { name = "odoo-addon-date-range", specifier = "==19.0.*" },
-    { name = "odoo-addon-report-xlsx", specifier = "==19.0.*" },
 ]
 
 [[package]]
