@@ -1147,6 +1147,11 @@ Looking ahead, the roadmap for uvault includes:
   - Documentation: [uvault.apycod.com](https://uvault.apycod.com)
 - **pip-preserve-requirements**: Original uvault inspiration by Stéphane Bidoul
   - [github.com/sbidoul/pip-preserve-requirements](https://github.com/sbidoul/pip-preserve-requirements)
+- **This presentation**
+  - https://odoo-dev.apycod.com/
+  - repo: petrus-v/odoo-dev-presentation
+    - [`main` branch](https://github.com/petrus-v/odoo-dev-presentation)   
+    - [`example` branch](https://github.com/petrus-v/odoo-dev-presentation/tree/example)   
 
 <!--
 Here are all the key links and resources.

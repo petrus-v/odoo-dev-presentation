@@ -32,12 +32,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: images
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v5
-        with:
-          path: index.html
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deployment
