@@ -1,4 +1,9 @@
-# My Odoo developmeent environmenet from dev to production
+# Pythonic Odoo local environment
+
+Reproductible instance from local to production server.
+
+You can checkout the [example branch](https://github.com/petrus-v/odoo-dev-presentation/tree/example)
+that illustrate all step of this presentation.
 
 
 ## Presentation & Diagrams Compilation
