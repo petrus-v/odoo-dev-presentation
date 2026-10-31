@@ -179,10 +179,8 @@ Mais aujourd'hui, grâce à des outils comme uv, pyproject.toml, whool et hatch-
 
 # **Au programme**
 
-* Qu'est ce qu'Odoo ?
-* Installer Odoo comme un projet Python standard
-* **hatch-odoo**: un build backend dédié pour Odoo
-* Travailler avec des Pull Requests non mergées
+* Jouer avec les outils de build et package Python pour rendre Odoo "Pythonisable".
+* Utiliser des PRs non mergées comme dépendances dans vos projet python.
 
 <!--
 Voici ce que nous allons aborder aujourd'hui :
