@@ -155,16 +155,20 @@ Voyons où nous en sommes aujourd'hui !
 
 ---
 
+![bg fit](./images/odoo-install-crm.png)
+
+---
+
 # **À propos**
 
-**Pierre Verkest** — Développeur Python passionné & indépendant @ APYCOD
+**Pierre Verkest** — Passionné par le développement Python & indépendant @ APYCOD
 
 ![bg 25%](./images/petrus-v.png)
 ![bg 50%](./images/apycod.png)
 
 - gh : @petrus-v
 - ln : @pierre-verkest
-- Contributeur OCA
+- Contributeur OCA (Odoo Community Association)
 - Contributeur pytest-odoo
 - Auteur de `uvault`
 
@@ -179,8 +183,8 @@ Mais aujourd'hui, grâce à des outils comme uv, pyproject.toml, whool et hatch-
 
 # **Au programme**
 
-* Jouer avec les outils de build et package Python pour rendre Odoo "Pythonisable".
-* Utiliser des PRs non mergées comme dépendances dans vos projet python.
+* Rendre Odoo "Pythonisable".
+* Utiliser des PRs (Pull Requests) non mergées comme dépendances dans vos projets python.
 
 <!--
 Voici ce que nous allons aborder aujourd'hui :
