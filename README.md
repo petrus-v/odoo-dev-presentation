@@ -5,6 +5,10 @@ Reproductible instance from local to production server.
 You can checkout the [example branch](https://github.com/petrus-v/odoo-dev-presentation/tree/example)
 that illustrate all step of this presentation.
 
+## Get slides
+
+- en at OCA Days 2026: https://odoo-dev.apycod.com/
+- fr at PyconFr 2026: https://odoo-dev.apycod.com/index-fr.html
 
 ## Presentation & Diagrams Compilation
 
