@@ -441,7 +441,7 @@ Quand on lance uv sync, il récupère automatiquement le wheel depuis PyPI avec 
 ### Ajouter un module OCA devient de la gestion de package Python standard !
 
 ```bash
-uv add odoo-addon-account-financial-report
+uv add odoo-addon-account-usability
 ```
 
 <!--
@@ -670,6 +670,33 @@ Abordons maintenant un problème bien réel auquel chaque développeur Odoo est 
 
 ---
 
+# **Mode editable local pour contribuer à l'OCA**
+
+### Corriger un bug ou contribuer à la PR OCA en local
+
+```bash
+# Cloner le dépôt de la PR en local dans .src/ (ajouté au .gitignore)
+git clone https://github.com/OCA/partner-contact .src/partner-contact
+```
+
+### Mettre à jour `pyproject.toml` avec la source editable :
+
+```toml
+[tool.uv.sources]
+odoo-addon-partner-contact = { path = ".src/partner-contact/partner_firstname", editable = true }
+```
+
+> ⚡ **Feedback instantané** : Toute modification dans `.src/partner-contact/partner_firstname` est
+> immédiatement prise en compte dans Odoo, sans réinstallation ni manipulation de chemins d'addons !
+
+<!--
+Note du présentateur : Étape 7 (git checkout step-7)
+Si vous voulez modifier cette PR OCA localement, vous clonez le dépôt dans .src/ et déclarez path = ".src/..." avec editable = true.
+Tout changement effectué en local est visible instantanément dans Odoo, sans avoir à réinstaller quoi que ce soit ni bidouiller le addons-path !
+-->
+
+---
+
 # **Travailler avec des Pull Requests OCA non mergées**
 
 ### PR non mergé sur `OCA/partner-contact#2485`
@@ -715,33 +742,6 @@ uv sync récupère le code de la PR directement depuis Git et verrouille le comm
 Note du présentateur :
 Voici comment uv gère les dépendances issues de PR : pyproject.toml définit la référence de PR cible, et uv.lock capture le SHA précis du commit.
 uv sync télécharge ensuite ce commit spécifique pour construire l'environnement.
--->
-
----
-
-# **Mode editable local pour contribuer à l'OCA**
-
-### Corriger un bug ou contribuer à la PR OCA en local
-
-```bash
-# Cloner le dépôt de la PR en local dans .src/ (ajouté au .gitignore)
-git clone https://github.com/OCA/partner-contact .src/partner-contact
-```
-
-### Mettre à jour `pyproject.toml` avec la source editable :
-
-```toml
-[tool.uv.sources]
-odoo-addon-partner-contact = { path = ".src/partner-contact/partner_firstname", editable = true }
-```
-
-> ⚡ **Feedback instantané** : Toute modification dans `.src/partner-contact/partner_firstname` est
-> immédiatement prise en compte dans Odoo, sans réinstallation ni manipulation de chemins d'addons !
-
-<!--
-Note du présentateur : Étape 7 (git checkout step-7)
-Si vous voulez modifier cette PR OCA localement, vous clonez le dépôt dans .src/ et déclarez path = ".src/..." avec editable = true.
-Tout changement effectué en local est visible instantanément dans Odoo, sans avoir à réinstaller quoi que ce soit ni bidouiller le addons-path !
 -->
 
 ---
@@ -923,33 +923,6 @@ uvault enregistre votre intention dans [tool.uvault.sources].
 -->
 
 ---
-# **Configurer son projet avant la première synchronisation**
-<br/>
-
-```toml
-[tool.uvault]
-tag_prefix = "pyconfr26"
-tag_template = "{tag_prefix}-{sha}"
-dev_directory = ".src/"
-
-# Configuration du Vault VCS
-[[tool.uvault.vcs_vaults]]
-provider = "github.com"
-owner = "apycod"
-default = true
-```
-<br/><br/>
-<br/>
-
-
-Plus d'options de configuration dans la documentation : [https://uvault.apycod.com/reference/#pyprojecttoml-configuration](https://uvault.apycod.com/reference/#pyprojecttoml-configuration)
-
-<!--
-Note du présentateur :
-Avant de synchroniser, on configure les paramètres du projet dans pyproject.toml, comme le préfixe de tag (ex. pyconfr26) et le propriétaire de notre dépôt Vault.
--->
-
----
 # **Vaulter & figer (`uvault sync`)**
 
 ### Lancer la synchronisation
@@ -983,6 +956,34 @@ Note du présentateur : Étape 2 (git checkout step-2-uvault)
 Maintenant on exécute uvx uvault sync.
 En coulisse, uvault récupère le commit de la PR, forke automatiquement le dépôt dans votre organisation Vault si besoin, pousse un tag immuable, et met à jour [tool.uv.sources] !
 Ensuite, un simple uv sync met à jour le fichier uv.lock.
+-->
+
+---
+
+# **Configurer son projet avant la première synchronisation**
+<br/>
+
+```toml
+[tool.uvault]
+tag_prefix = "pyconfr26"
+tag_template = "{tag_prefix}-{sha}"
+dev_directory = ".src/"
+
+# Configuration du Vault VCS
+[[tool.uvault.vcs_vaults]]
+provider = "github.com"
+owner = "apycod"
+default = true
+```
+<br/><br/>
+<br/>
+
+
+Plus d'options de configuration dans la documentation : [https://uvault.apycod.com/reference/#pyprojecttoml-configuration](https://uvault.apycod.com/reference/#pyprojecttoml-configuration)
+
+<!--
+Note du présentateur :
+Avant de synchroniser, on configure les paramètres du projet dans pyproject.toml, comme le préfixe de tag (ex. pyconfr26) et le propriétaire de notre dépôt Vault.
 -->
 
 ---
@@ -1216,9 +1217,12 @@ Découvrez uv par Astral, hatch-odoo et whool par Stéphane Bidoul, et uvault su
 <!-- _class: lead -->
 
 
-# Merci !
+Merci à l'AFPy ![](images/afpy.svg) et tous les sponsor de la PyConFR 2026.
 
-# Questions ?
+# Merci pour votre attention
+
+## Questions ?
+
 
 <!--
 Merci beaucoup pour votre attention !
